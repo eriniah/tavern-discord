@@ -1,0 +1,7 @@
+plugins {
+    id 'com.asm.tavern.discord.groovy-library-conventions'
+}
+
+dependencies {
+    implementation project(':utilities')
+}

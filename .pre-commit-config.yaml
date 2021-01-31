@@ -1,0 +1,6 @@
+repos:
+- repo: https://github.com/ekans/prettier-java-pre-commit-hook.git
+  rev: e5530b7459f6e41957fe3cee57b5682548180e04
+  hooks:
+  - id: prettier-java
+
