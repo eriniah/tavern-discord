@@ -36,17 +36,18 @@ class App {
 
     static void main(String[] args) {
 		String token = args[0]
+		String configLocation = args[1]
 
 		logger.info("Initializing Discord API")
 		CommandHandlerRegistry commandHandlerRegistry = new CommandHandlerRegistry()
 		Discord discord = new Discord(token, PREFIX, TavernCommands.getCommands(), commandHandlerRegistry)
 
-		logger.info("Initializing application context") // probably don't need this: new ClassPathXmlApplicationContext("applicationContext.xml")
+		logger.info("Initializing application context")
 		GenericApplicationContext applicationContext = new GenericApplicationContext()
 		applicationContext.registerBean(Discord.class, () -> discord)
 		applicationContext.registerBean(RollService.class, RollService::new)
 		applicationContext.registerBean(AudioService.class, LavaPlayerAudioService::new)
-		applicationContext.registerBean(SongRepository.class, () -> new FileSongRepository(new File("E:/dev/test/songs.json"))) // TODO: Configurable storage path
+		applicationContext.registerBean(SongRepository.class, () -> new FileSongRepository(new File(configLocation)))
 		applicationContext.registerBean(SongService.class, () -> new SongService(applicationContext.getBean(SongRepository.class)))
 		applicationContext.registerBean(ComradeService.class, LocalComradeService::new)
 		applicationContext.registerBean(DrinkRepository.class, LocalDrinkRepository::new)
