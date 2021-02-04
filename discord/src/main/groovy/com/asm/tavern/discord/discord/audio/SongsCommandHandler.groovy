@@ -6,6 +6,9 @@ import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.audio.Song
 import com.asm.tavern.domain.model.audio.SongService
 import com.asm.tavern.domain.model.command.*
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.EmbedType
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 import javax.annotation.Nonnull
@@ -34,13 +37,10 @@ class SongsCommandHandler implements CommandHandler {
 				.sorted(Comparator.comparing((Song song) -> song.id.id))
 				.collect(StreamChunkCollector.take(10))
 				.forEach({ songs ->
-					StringBuilder builder = new StringBuilder()
-					songs.forEach({ song -> builder.append(song.id)
-							.append(" - ")
-							.append(DiscordUtils.escapeUrl(song.uri.toString()))
-							.append("\n")
+						StringBuilder builder = new StringBuilder()
+						songs.forEach({ song -> builder.append("[${song.id}](${DiscordUtils.escapeUrl(song.uri.toString())})\n")
 					})
-					event.getChannel().sendMessage(builder.toString()).queue()
+					event.getChannel().sendMessage(new MessageEmbed(null, "Songs", builder.toString(), null, null, 0xFF0000, null, null, null, null, null,null, null)).queue()
 				})
 		new CommandResultBuilder().success().build()
 	}
