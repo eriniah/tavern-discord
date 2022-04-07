@@ -11,6 +11,14 @@ repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
     mavenCentral()
+    // Has to add the below for lavaplayer fork
+    mavenLocal()
+    maven {
+        url 'https://jitpack.io'
+    }
+    maven {
+        url = 'https://m2.dv8tion.net/releases'
+    }
 }
 
 dependencies {
