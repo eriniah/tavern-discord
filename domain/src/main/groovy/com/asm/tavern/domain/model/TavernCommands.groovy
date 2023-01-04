@@ -118,6 +118,12 @@ class TavernCommands {
 			.add(usage('default', 'Shuffle the current song queue'))
 			.build()
 
+	static final Command PLAY_NEXT = command('pn', 'Play this song or playlist after the currently playing song')
+			.tag(Tags.MUSIC)
+			.add(usage('default', 'Play this song or playlist after the currently playing song')
+					.add(argument('song', 'the youtube url or song id').example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")))
+			.build()
+
 	static final Command PAUSE = command('pause', 'Pause the music')
 			.tag(Tags.MUSIC)
 			.add(usage('default', 'Pause the music'))

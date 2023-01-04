@@ -29,6 +29,8 @@ interface AudioService {
 
 	void shuffle(GuildId guildId)
 
+	void playNext(TextChannel textChannel, URI song)
+
 	List<AudioTrackInfo> getQueue(GuildId guildId)
 
 	ActiveAudioTrack getNowPlaying(GuildId guildId)

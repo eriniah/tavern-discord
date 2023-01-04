@@ -104,6 +104,7 @@ class App {
 			.add(new PopPopCommandHandler(drinkService))
 			.add(new DrinksCommandHandler(drinkService))
 			.add(new ShuffleQueueCommandHandler(audioService))
+			.add(new PlayNextCommandHandler(songService, audioService))
 
 		discord.start()
     }

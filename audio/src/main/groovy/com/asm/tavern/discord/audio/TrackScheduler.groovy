@@ -68,12 +68,26 @@ class TrackScheduler extends AudioEventAdapter {
 
 	void shuffle() {
 		// Shuffle and reconstruct the Queue
-		BlockingQueue<AudioTrack> shuffledQueue = new LinkedBlockingQueue<>();
+		BlockingQueue<AudioTrack> shuffledQueue = new LinkedBlockingQueue<>()
 		List<AudioTrack> songList = queue.toList()
 		Collections.shuffle(songList)
 		songList.forEach(shuffledQueue::add)
 
 		this.queue = shuffledQueue
+	}
+
+	void playNext(AudioTrack track) {
+		// possibly this should just be an error that nothing is currently in the queue and play command should be used instead,
+		// but if nothing is in the queue and you attempt to playnext you probably just want the song to play right?
+		if (!player.startTrack(track, true)) {
+			// add new song to queue position 0 ie: next
+			BlockingQueue<AudioTrack> modifiedQueue = new LinkedBlockingQueue<>()
+			List<AudioTrack> songList = queue.toList()
+			songList.add(0, track)
+			songList.forEach(modifiedQueue::add)
+
+			this.queue = modifiedQueue
+		}
 	}
 
 	BlockingQueue<AudioTrack> getQueue() {

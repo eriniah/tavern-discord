@@ -173,4 +173,78 @@ class LavaPlayerAudioService implements AudioService {
 	void shuffle(GuildId guildId) {
 		musicManagers.get(guildId).getScheduler().shuffle()
 	}
+
+	@Override
+	void playNext(TextChannel textChannel, URI uri) {
+		GuildId guildId = new GuildId(textChannel.getGuild().getId())
+		GuildMusicManager musicManager = musicManagers.get(guildId)
+
+
+
+		playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
+			@Override
+			void trackLoaded(AudioTrack track) {
+				if(!getNowPlaying(guildId)){
+					textChannel.sendMessage("Playing ${track.getInfo().title}").queue()
+					musicManagers.get(guildId).getScheduler().playNext(track)
+				}
+				else{
+					textChannel.sendMessage("Adding ${track.getInfo().title} to queue after currently playing song.").queue()
+					musicManagers.get(guildId).getScheduler().playNext(track)
+				}
+
+			}
+
+			@Override
+			void playlistLoaded(AudioPlaylist playlist) {
+				AudioTrack firstTrack = playlist.getSelectedTrack()
+
+				if (firstTrack == null) {
+					firstTrack = playlist.getTracks().first()
+				}
+
+				int currentIndex = playlist.getTracks().indexOf(firstTrack)
+				if (currentIndex == -1) {
+					logger.warn("Could not find track index, starting from the top")
+					currentIndex = 0
+				}
+
+
+				// if nothing in queue, we just add the playlist normally else we add it in reverse order to the position this maintains playlist order while placing in queue at correct position
+
+				if(!getNowPlaying(guildId)){
+					for (int i = currentIndex; i < playlist.tracks.size(); i++) {
+						scheduleTrack(musicManager, playlist.tracks[i])
+					}
+
+					textChannel.sendMessage("Adding playlist ${playlist.name} to queue. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
+				}
+				else{
+					// Modified from play command, if adding a playlist to play next we would want to reverse order the list when sending it to queue
+					// This is because adding a playlist one song at a time to a specific position would reverse order.
+					// a,b,c + playlist(1,2,3) by going a,b,c + 1; a,b,c,1 + 2; etc... =a,b,c,1,2, 3 This works for just adding to the end of the queue
+					// a,b,c + playlist(1,2,3) by going 1,a,b,c; 2,1,a,b,c; etc... = 3,2,1,a,b,c But when placing at the first position would mess up the order of the list added
+					for (int i = playlist.tracks.size(); i > 0; i--) {
+						musicManagers.get(guildId).getScheduler().playNext(playlist.tracks[i-1])
+					}
+
+					textChannel.sendMessage("Adding playlist ${playlist.name} to queue after currently playing song. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
+
+				}
+
+
+			}
+
+			@Override
+			void noMatches() {
+				textChannel.sendMessage("Nothing found by ${uri}")
+			}
+
+			@Override
+			void loadFailed(FriendlyException exception) {
+				textChannel.sendMessage("Could not play: ${exception.getMessage()}").queue()
+			}
+		})
+
+	}
 }
