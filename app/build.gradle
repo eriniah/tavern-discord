@@ -4,8 +4,10 @@
 
 plugins {
     id 'com.asm.tavern.discord.groovy-application-conventions'
+    id 'distribution'
 }
 
+mainClassName = 'com.asm.tavern.discord.app.App'
 version = '1.0.0'
 description = 'Tavern discord integration'
 
@@ -20,5 +22,49 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'com.asm.tavern.discord.app.App'
+    mainClass = 'com.asm.tavern.discord.app.App'
 }
+
+distributions {
+    main {
+        contents {
+            from '../'
+            include '*.properties'
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.asm.tavern.discord.app.App'
+    }
+    baseName 'tavern'
+    archiveName = "${baseName}.${jar.extension}"
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    new File(jar.destinationDir , "/Tavern-${version}").mkdir()
+    destinationDir = new File(jar.destinationDir , "/Tavern-${version}")
+
+}
+
+tasks.register("scriptDeploy", Copy) {
+    new File(jar.destinationDir , "/launchTavern.bat").text =
+            "java -jar tavern.jar\n" +
+                    "pause"
+
+    new File(jar.destinationDir, "/launchTavern.sh").text =
+            "#!/usr/bin/env bash\n" +
+                    "java -jar tavern.jar\n"
+
+    from("../")
+    include("tavern-discord.properties")
+    includeEmptyDirs = false
+    into(new File(jar.destinationDir , "/"))
+}
+
+tasks.named("build") { finalizedBy("scriptDeploy") }
