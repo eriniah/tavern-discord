@@ -35,20 +35,50 @@ import org.springframework.context.support.GenericApplicationContext
 class App {
 	private static final XLogger logger = XLoggerFactory.getXLogger(App.class)
 
-    static void main(String[] args) {
+	static void main(String[] args) {
 		logger.info("Starting up")
 		String appConfigLocation = './tavern-discord.properties'
-		if (args) {
-			appConfigLocation = args[0]
-		}
-		logger.info("Reading configuration file at ${appConfigLocation}")
 		Properties properties = new Properties()
-		properties.load(new FileInputStream(new File(appConfigLocation)))
+
+		if (args && args.size() == 1) {
+			appConfigLocation = args[0]
+			properties.load(new FileInputStream(new File(appConfigLocation)))
+		}
+		else if(args.size() > 1){
+			String discordToken = args[0]
+			String songFileLocation =  args[1]
+			String commandPrefix = args.size() == 2 ? "\$" : args[2]
+
+			try{
+				File tavernDiscordProperties = new File(appConfigLocation)
+
+				tavernDiscordProperties.createNewFile()
+				properties.setProperty("discordToken", discordToken)
+				properties.setProperty("songFileLocation", songFileLocation)
+				properties.setProperty("command.prefix", commandPrefix)
+				properties.store(new FileOutputStream(tavernDiscordProperties), null)
+				properties.load(new FileInputStream(new File(appConfigLocation)))
+			}
+			catch (Exception e){
+				logger.error("There was an issue creating the tavern-discord.properties: ${e}" )
+			}
+		}
+		else
+			properties.load(new FileInputStream(new File(appConfigLocation)))
+
 		AppConfig appConfig = new AppConfig(properties)
+		logger.info("Reading configuration file at ${appConfigLocation}")
+		properties.load(new FileInputStream(new File(appConfigLocation)))
 
 		logger.info("Initializing Discord API")
 		CommandHandlerRegistry commandHandlerRegistry = new CommandHandlerRegistry()
 		CommandParser commandParser = new CommandParser(appConfig.getPrefix(), TavernCommands.getCommands())
+
+		if(appConfig.getDiscordToken() == null || appConfig.getDiscordToken().isEmpty()){
+			logger.info("DiscordToken is empty, please enter now:")
+			properties.setProperty("discordToken", new Scanner(System.in).next())
+			properties.store(new FileOutputStream(appConfigLocation), null)
+		}
 		Discord discord = new Discord(appConfig.getDiscordToken(), commandParser, commandHandlerRegistry)
 
 		logger.info("Initializing application context")
@@ -109,5 +139,4 @@ class App {
 
 		discord.start()
     }
-
 }
