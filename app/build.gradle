@@ -36,16 +36,13 @@ distributions {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.asm.tavern.discord.app.App'
+        attributes 'Main-Class': application.mainClass
     }
     baseName 'tavern'
     archiveName = "${baseName}.${jar.extension}"
+    dependsOn configurations.runtimeClasspath
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    } {
-        exclude "META-INF/*.SF"
-        exclude "META-INF/*.DSA"
-        exclude "META-INF/*.RSA"
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
     new File(jar.destinationDir , "/Tavern-${version}").mkdir()
     destinationDir = new File(jar.destinationDir , "/Tavern-${version}")
