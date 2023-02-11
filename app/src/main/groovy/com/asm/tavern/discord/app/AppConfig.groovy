@@ -15,8 +15,15 @@ class AppConfig {
 		properties.getProperty('discordToken')
 	}
 
+	String getSpotifyClientId() {
+		properties.getProperty('spotifyClientId')
+	}
+
+	String getSpotifyClientSecret() {
+		properties.getProperty('spotifyClientSecret')
+	}
+
 	String getPrefix() {
 		properties.getProperty('command.prefix')
 	}
-
 }

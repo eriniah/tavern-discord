@@ -28,6 +28,7 @@ import com.asm.tavern.domain.model.drinks.DrinkRepository
 import com.asm.tavern.domain.model.drinks.DrinkService
 import com.asm.tavern.domain.model.drinks.QuestService
 import com.asm.tavern.domain.model.roll.RollService
+import com.asm.tavern.domain.model.audio.SpotifyService
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 import org.springframework.context.support.GenericApplicationContext
@@ -48,6 +49,8 @@ class App {
 			String discordToken = args[0]
 			String songFileLocation =  args[1]
 			String commandPrefix = args.size() == 2 ? "\$" : args[2]
+			String spotifyClientId = args.size() > 4 ? "" : args[3]
+			String spotifyClientSecret = args.size() > 4 ? "" : args[4]
 
 			try{
 				File tavernDiscordProperties = new File(appConfigLocation)
@@ -56,6 +59,8 @@ class App {
 				properties.setProperty("discordToken", discordToken)
 				properties.setProperty("songFileLocation", songFileLocation)
 				properties.setProperty("command.prefix", commandPrefix)
+				properties.setProperty("spotifyClientId", spotifyClientId)
+				properties.setProperty("spotifyClientSecret", spotifyClientSecret)
 				properties.store(new FileOutputStream(tavernDiscordProperties), null)
 				properties.load(new FileInputStream(new File(appConfigLocation)))
 			}
@@ -86,7 +91,8 @@ class App {
 		applicationContext.registerBean(RollService.class, RollService::new)
 		applicationContext.registerBean(AudioService.class, LavaPlayerAudioService::new)
 		applicationContext.registerBean(SongRepository.class, () -> new FileSongRepository(appConfig.getSongFile()))
-		applicationContext.registerBean(SongService.class, () -> new SongService(applicationContext.getBean(SongRepository.class)))
+		applicationContext.registerBean(SpotifyService.class, () -> new SpotifyService(appConfig.getSpotifyClientId(), appConfig.getSpotifyClientSecret()))
+		applicationContext.registerBean(SongService.class, () -> new SongService(applicationContext.getBean(SongRepository.class), applicationContext.getBean(SpotifyService.class)))
 		applicationContext.registerBean(ComradeService.class, LocalComradeService::new)
 		applicationContext.registerBean(DrinkRepository.class, LocalDrinkRepository::new)
 		applicationContext.registerBean(QuestService.class, LocalQuestService::new)

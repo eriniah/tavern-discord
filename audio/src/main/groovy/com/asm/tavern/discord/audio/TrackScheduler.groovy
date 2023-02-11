@@ -7,7 +7,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.stream.Collectors
 
 class TrackScheduler extends AudioEventAdapter {
 	private final AudioPlayer player
@@ -32,6 +31,20 @@ class TrackScheduler extends AudioEventAdapter {
 		// track goes to the queue instead.
 		if (!player.startTrack(track, true)) {
 			queue.offer(track)
+		}
+	}
+
+	void playNext(AudioTrack track) {
+		// possibly this should just be an error that nothing is currently in the queue and play command should be used instead,
+		// but if nothing is in the queue and you attempt to playnext you probably just want the song to play right?
+		if (!player.startTrack(track, true)) {
+			// add new song to queue position 0 ie: next
+			BlockingQueue<AudioTrack> modifiedQueue = new LinkedBlockingQueue<>()
+			List<AudioTrack> songList = queue.toList()
+			songList.add(0, track)
+			songList.forEach(modifiedQueue::add)
+
+			this.queue = modifiedQueue
 		}
 	}
 
@@ -74,20 +87,6 @@ class TrackScheduler extends AudioEventAdapter {
 		songList.forEach(shuffledQueue::add)
 
 		this.queue = shuffledQueue
-	}
-
-	void playNext(AudioTrack track) {
-		// possibly this should just be an error that nothing is currently in the queue and play command should be used instead,
-		// but if nothing is in the queue and you attempt to playnext you probably just want the song to play right?
-		if (!player.startTrack(track, true)) {
-			// add new song to queue position 0 ie: next
-			BlockingQueue<AudioTrack> modifiedQueue = new LinkedBlockingQueue<>()
-			List<AudioTrack> songList = queue.toList()
-			songList.add(0, track)
-			songList.forEach(modifiedQueue::add)
-
-			this.queue = modifiedQueue
-		}
 	}
 
 	BlockingQueue<AudioTrack> getQueue() {

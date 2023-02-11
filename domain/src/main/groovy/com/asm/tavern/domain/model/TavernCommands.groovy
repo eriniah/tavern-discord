@@ -84,7 +84,8 @@ class TavernCommands {
 	static final Command PLAY = command('play', 'Play a song')
 			.tag(Tags.MUSIC)
 			.add(usage('song', 'Play a song')
-					.add(argument('song', 'the youtube url or song id').example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")))
+			.varArgs()
+				.add(argument('song', 'the youtube url or song id').example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")))
 			.build()
 
 	static final Command NOW_PLAYING = command('np', 'Get the current playing track')
