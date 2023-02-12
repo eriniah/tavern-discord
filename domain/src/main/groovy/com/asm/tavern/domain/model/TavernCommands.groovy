@@ -121,7 +121,8 @@ class TavernCommands {
 
 	static final Command PLAY_NEXT = command('pn', 'Play this song or playlist after the currently playing song')
 			.tag(Tags.MUSIC)
-			.add(usage('default', 'Play this song or playlist after the currently playing song')
+			.add(usage('song', 'Play this song or playlist after the currently playing song')
+			.varArgs()
 					.add(argument('song', 'the youtube url or song id').example("https://www.youtube.com/watch?v=dQw4w9WgXcQ")))
 			.build()
 
