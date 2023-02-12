@@ -17,6 +17,8 @@ interface AudioService {
 
 	void play(TextChannel textChannel, URI song)
 
+	void play(TextChannel textChannel, String searchString)
+
 	void skip(GuildId guildId, int amount)
 
 	void stop(GuildId guildId)
@@ -30,6 +32,8 @@ interface AudioService {
 	void shuffle(GuildId guildId)
 
 	void playNext(TextChannel textChannel, URI song)
+
+	void playNext(TextChannel textChannel, String searchString)
 
 	List<AudioTrackInfo> getQueue(GuildId guildId)
 

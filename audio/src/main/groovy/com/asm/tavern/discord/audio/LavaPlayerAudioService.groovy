@@ -25,6 +25,7 @@ class LavaPlayerAudioService implements AudioService {
 	private static final XLogger logger = XLoggerFactory.getXLogger(LavaPlayerAudioService.class)
 	private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager()
 	private final Map<GuildId, GuildMusicManager> musicManagers = new HashMap<>()
+	private final YOUTUBE_SEARCH_PREFIX = "ytsearch:"
 
 	LavaPlayerAudioService() {
 		AudioSourceManagers.registerRemoteSources(playerManager)
@@ -54,7 +55,51 @@ class LavaPlayerAudioService implements AudioService {
 	void play(TextChannel textChannel, URI uri) {
 		GuildMusicManager musicManager = musicManagers.get(new GuildId(textChannel.getGuild().getId()))
 
-		playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
+			playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
+				@Override
+				void trackLoaded(AudioTrack track) {
+					textChannel.sendMessage("Adding to queue ${track.getInfo().title}").queue()
+					scheduleTrack(musicManager, track)
+				}
+
+				@Override
+				void playlistLoaded(AudioPlaylist playlist) {
+					AudioTrack firstTrack = playlist.getSelectedTrack()
+
+					if (firstTrack == null) {
+						firstTrack = playlist.getTracks().first()
+					}
+
+					int currentIndex = playlist.getTracks().indexOf(firstTrack)
+					if (currentIndex == -1) {
+						logger.warn("Could not find track index, starting from the top")
+						currentIndex = 0
+					}
+
+					for (int i = currentIndex; i < playlist.tracks.size(); i++) {
+						scheduleTrack(musicManager, playlist.tracks[i])
+					}
+
+					textChannel.sendMessage("Adding playlist ${playlist.name} to queue. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
+				}
+
+				@Override
+				void noMatches() {
+					textChannel.sendMessage("Nothing found by ${uri}")
+				}
+
+				@Override
+				void loadFailed(FriendlyException exception) {
+					textChannel.sendMessage("Could not play: ${exception.getMessage()}").queue()
+				}
+			})
+	}
+
+	@Override
+	void play(TextChannel textChannel, String searchString) {
+		GuildMusicManager musicManager = musicManagers.get(new GuildId(textChannel.getGuild().getId()))
+
+		playerManager.loadItemOrdered(musicManager, YOUTUBE_SEARCH_PREFIX + searchString, new AudioLoadResultHandler() {
 			@Override
 			void trackLoaded(AudioTrack track) {
 				textChannel.sendMessage("Adding to queue ${track.getInfo().title}").queue()
@@ -70,22 +115,14 @@ class LavaPlayerAudioService implements AudioService {
 					firstTrack = playlist.getTracks().first()
 				}
 
-				int currentIndex = playlist.getTracks().indexOf(firstTrack)
-				if (currentIndex == -1) {
-					logger.warn("Could not find track index, starting from the top")
-					currentIndex = 0
-				}
+				scheduleTrack(musicManager, firstTrack)
 
-				for (int i = currentIndex; i < playlist.tracks.size(); i++) {
-					scheduleTrack(musicManager, playlist.tracks[i])
-				}
-
-				textChannel.sendMessage("Adding playlist ${playlist.name} to queue. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
+				textChannel.sendMessage("Adding to queue ${firstTrack.info.title}").queue()
 			}
 
 			@Override
 			void noMatches() {
-				textChannel.sendMessage("Nothing found by ${uri}")
+				textChannel.sendMessage("Nothing found by ${searchString}")
 			}
 
 			@Override
@@ -95,9 +132,136 @@ class LavaPlayerAudioService implements AudioService {
 		})
 	}
 
+    @Override
+    void playNext(TextChannel textChannel, URI uri) {
+        GuildId guildId = new GuildId(textChannel.getGuild().getId())
+        GuildMusicManager musicManager = musicManagers.get(guildId)
+
+
+
+        playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
+            @Override
+            void trackLoaded(AudioTrack track) {
+                if(!getNowPlaying(guildId)){
+                    textChannel.sendMessage("Playing ${track.getInfo().title}").queue()
+                    musicManagers.get(guildId).getScheduler().playNext(track)
+                }
+                else{
+                    textChannel.sendMessage("Adding ${track.getInfo().title} to queue after currently playing song.").queue()
+                    musicManagers.get(guildId).getScheduler().playNext(track)
+                }
+
+            }
+
+            @Override
+            void playlistLoaded(AudioPlaylist playlist) {
+                AudioTrack firstTrack = playlist.getSelectedTrack()
+
+                if (firstTrack == null) {
+                    firstTrack = playlist.getTracks().first()
+                }
+
+                int currentIndex = playlist.getTracks().indexOf(firstTrack)
+                if (currentIndex == -1) {
+                    logger.warn("Could not find track index, starting from the top")
+                    currentIndex = 0
+                }
+
+
+                // if nothing in queue, we just add the playlist normally else we add it in reverse order to the position this maintains playlist order while placing in queue at correct position
+
+                if(!getNowPlaying(guildId)){
+                    for (int i = currentIndex; i < playlist.tracks.size(); i++) {
+                        scheduleTrack(musicManager, playlist.tracks[i])
+                    }
+
+                    textChannel.sendMessage("Adding playlist ${playlist.name} to queue. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
+                }
+                else{
+                    // Modified from play command, if adding a playlist to play next we would want to reverse order the list when sending it to queue
+                    // This is because adding a playlist one song at a time to a specific position would reverse order.
+                    // a,b,c + playlist(1,2,3) by going a,b,c + 1; a,b,c,1 + 2; etc... =a,b,c,1,2, 3 This works for just adding to the end of the queue
+                    // a,b,c + playlist(1,2,3) by going 1,a,b,c; 2,1,a,b,c; etc... = 3,2,1,a,b,c But when placing at the first position would mess up the order of the list added
+                    for (int i = playlist.tracks.size(); i > 0; i--) {
+                        musicManagers.get(guildId).getScheduler().playNext(playlist.tracks[i-1])
+                    }
+
+                    textChannel.sendMessage("Adding playlist ${playlist.name} to queue after currently playing song. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
+
+                }
+            }
+
+            @Override
+            void noMatches() {
+                textChannel.sendMessage("Nothing found by ${uri}")
+            }
+
+            @Override
+            void loadFailed(FriendlyException exception) {
+                textChannel.sendMessage("Could not play: ${exception.getMessage()}").queue()
+            }
+        })
+    }
+
+    @Override
+    void playNext(TextChannel textChannel, String searchString) {
+        GuildId guildId = new GuildId(textChannel.getGuild().getId())
+        GuildMusicManager musicManager = musicManagers.get(guildId)
+
+        // playNext with a search string gets a playlist back from the search, so handle it like we only want the first song.
+
+
+        playerManager.loadItemOrdered(musicManager, YOUTUBE_SEARCH_PREFIX + searchString, new AudioLoadResultHandler() {
+            @Override
+            void trackLoaded(AudioTrack track) {
+                if(!getNowPlaying(guildId)){
+                    textChannel.sendMessage("Playing ${track.getInfo().title}").queue()
+                    scheduleTrack(musicManager, track)
+                }
+                else{
+                    textChannel.sendMessage("Adding ${track.getInfo().title} to queue after currently playing song.").queue()
+                    scheduleTrackNext(musicManager, track)
+                }
+
+            }
+
+            @Override
+            void playlistLoaded(AudioPlaylist playlist) {
+                AudioTrack firstTrack = playlist.getSelectedTrack()
+
+                if (firstTrack == null) {
+                    firstTrack = playlist.getTracks().first()
+                }
+                if(!getNowPlaying(guildId)){
+                    scheduleTrack(musicManager, playlist.getTracks().first())
+                    textChannel.sendMessage("Adding ${firstTrack.info.title} to queue.").queue()
+                }
+                else{
+                    scheduleTrackNext(musicManager, playlist.getTracks().first())
+                    textChannel.sendMessage("Adding ${firstTrack.info.title} to queue after currently playing song.").queue()
+
+                }
+            }
+
+            @Override
+            void noMatches() {
+                textChannel.sendMessage("Nothing found by ${searchString}")
+            }
+
+            @Override
+            void loadFailed(FriendlyException exception) {
+                textChannel.sendMessage("Could not play: ${exception.getMessage()}").queue()
+            }
+        })
+    }
+
 	private void scheduleTrack(GuildMusicManager musicManager, AudioTrack track) {
 		musicManager.getScheduler().queue(track)
 	}
+
+    private void scheduleTrackNext(GuildMusicManager musicManager, AudioTrack track) {
+        musicManager.getScheduler().playNext(track)
+    }
 
 	private synchronized GuildMusicManager getGuildAudioPlayer(GuildVoiceState guildVoiceState) {
 		GuildId guildId = new GuildId(guildVoiceState.getGuild().getId())
@@ -172,79 +336,5 @@ class LavaPlayerAudioService implements AudioService {
 	@Override
 	void shuffle(GuildId guildId) {
 		musicManagers.get(guildId).getScheduler().shuffle()
-	}
-
-	@Override
-	void playNext(TextChannel textChannel, URI uri) {
-		GuildId guildId = new GuildId(textChannel.getGuild().getId())
-		GuildMusicManager musicManager = musicManagers.get(guildId)
-
-
-
-		playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
-			@Override
-			void trackLoaded(AudioTrack track) {
-				if(!getNowPlaying(guildId)){
-					textChannel.sendMessage("Playing ${track.getInfo().title}").queue()
-					musicManagers.get(guildId).getScheduler().playNext(track)
-				}
-				else{
-					textChannel.sendMessage("Adding ${track.getInfo().title} to queue after currently playing song.").queue()
-					musicManagers.get(guildId).getScheduler().playNext(track)
-				}
-
-			}
-
-			@Override
-			void playlistLoaded(AudioPlaylist playlist) {
-				AudioTrack firstTrack = playlist.getSelectedTrack()
-
-				if (firstTrack == null) {
-					firstTrack = playlist.getTracks().first()
-				}
-
-				int currentIndex = playlist.getTracks().indexOf(firstTrack)
-				if (currentIndex == -1) {
-					logger.warn("Could not find track index, starting from the top")
-					currentIndex = 0
-				}
-
-
-				// if nothing in queue, we just add the playlist normally else we add it in reverse order to the position this maintains playlist order while placing in queue at correct position
-
-				if(!getNowPlaying(guildId)){
-					for (int i = currentIndex; i < playlist.tracks.size(); i++) {
-						scheduleTrack(musicManager, playlist.tracks[i])
-					}
-
-					textChannel.sendMessage("Adding playlist ${playlist.name} to queue. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
-				}
-				else{
-					// Modified from play command, if adding a playlist to play next we would want to reverse order the list when sending it to queue
-					// This is because adding a playlist one song at a time to a specific position would reverse order.
-					// a,b,c + playlist(1,2,3) by going a,b,c + 1; a,b,c,1 + 2; etc... =a,b,c,1,2, 3 This works for just adding to the end of the queue
-					// a,b,c + playlist(1,2,3) by going 1,a,b,c; 2,1,a,b,c; etc... = 3,2,1,a,b,c But when placing at the first position would mess up the order of the list added
-					for (int i = playlist.tracks.size(); i > 0; i--) {
-						musicManagers.get(guildId).getScheduler().playNext(playlist.tracks[i-1])
-					}
-
-					textChannel.sendMessage("Adding playlist ${playlist.name} to queue after currently playing song. Starting with the track ${playlist.tracks[currentIndex].info.title}").queue()
-
-				}
-
-
-			}
-
-			@Override
-			void noMatches() {
-				textChannel.sendMessage("Nothing found by ${uri}")
-			}
-
-			@Override
-			void loadFailed(FriendlyException exception) {
-				textChannel.sendMessage("Could not play: ${exception.getMessage()}").queue()
-			}
-		})
-
 	}
 }
