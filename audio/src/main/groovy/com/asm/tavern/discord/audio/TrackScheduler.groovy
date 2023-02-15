@@ -114,8 +114,6 @@ class TrackScheduler extends AudioEventAdapter {
 	@Override
 	void onTrackStart(AudioPlayer player, AudioTrack track){
 		textChannel.sendMessage("Now Playing: ${track.getInfo().title}").queue()
-
-
 	}
 
 }
