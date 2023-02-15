@@ -10,6 +10,7 @@ import com.asm.tavern.domain.model.discord.VoiceChannelId
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.events.interaction.*
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 
@@ -59,6 +60,33 @@ class DiscordListener extends ListenerAdapter {
 		if (event.getChannelLeft().members.size() == 1 && voiceChannelId == DomainRegistry.audioService().getCurrentChannel(guildId)) {
 			DomainRegistry.audioService().stop(guildId)
 			DomainRegistry.audioService().leave(event.getGuild())
+		}
+	}
+
+	@Override
+	void onButtonClick(@Nonnull ButtonClickEvent event) {
+		String message = event.getButton().id
+		CommandMessage result = parser.parse(parser.prefix + message)
+		event.deferEdit().queue()
+
+
+		if (!result.commandList.isEmpty()) {
+			if (!result.usage.canUse(event.getMember())) {
+				event.getChannel().sendMessage("You do not have permissions for this command").queue()
+				logger.debug("${event.getMember().getEffectiveName()} cannot use the command usage ${result.commandList.last().name} - ${result.usage.name}")
+				return
+			}
+
+			CommandHandler handler = commandHandlerRegistry.getHandler(result)
+			if (handler) {
+				if (!handler.handle(new GuildMessageReceivedEvent(event.getJDA(), event.responseNumber, event.getMessage()), result)) {
+					logger.error("Failed to handle command ${parser.prefix}${result.getCommandString()}")
+				}
+			} else {
+				logger.warn("No handler for command {} with usage {}", result.commandList.last().name, result.usage.name)
+			}
+		} else if (message.startsWith(parser.prefix)) {
+			logger.debug("No command for message '{}'", message)
 		}
 	}
 }

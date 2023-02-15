@@ -4,10 +4,14 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.interactions.components.*
 
+import java.time.Duration
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.function.Function
 
 class TrackScheduler extends AudioEventAdapter {
 	private final AudioPlayer player
@@ -81,6 +85,10 @@ class TrackScheduler extends AudioEventAdapter {
 		player.setPaused(false)
 	}
 
+    boolean getIsPaused() {
+        player.paused
+    }
+
 	void shuffle() {
 		// Shuffle and reconstruct the Queue
 		BlockingQueue<AudioTrack> shuffledQueue = new LinkedBlockingQueue<>()
@@ -113,7 +121,32 @@ class TrackScheduler extends AudioEventAdapter {
 
 	@Override
 	void onTrackStart(AudioPlayer player, AudioTrack track){
-		textChannel.sendMessage("Now Playing: ${track.getInfo().title}").queue()
+		Function<Duration, String> formatTime = (Duration duration) -> {
+			String.format("%d:%2d", (duration.getSeconds()/60).intValue(), (duration.getSeconds()%60).intValue()).replace(" ", "0")
+		}
+
+		Function<String, String> getVideoImageID = (String videoUrl) -> {
+			String videoImageId = videoUrl.split("(?<=watch\\?v=)")[1]
+			videoUrl = String.format("https://img.youtube.com/vi/%s/sddefault.jpg", videoImageId)
+		}
+
+		String videoImgUrl = getVideoImageID(track.info.uri.toString())
+		EmbedBuilder eb = new EmbedBuilder()
+		//eb.setTitle(track.info.title, track.info.uri) // large hyperlink
+		eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
+		//eb.setImage(videoImgUrl) // Bottom large image
+		eb.setThumbnail(videoImgUrl) // Top right corner image
+		eb.setDescription("Now Playing: ${track.info.title}")
+		eb.addField("Duration:", "${formatTime(Duration.ofMillis(player.playingTrack.position))}/${formatTime(Duration.ofMillis(track.info.length))}", false)
+		eb.setColor(0x5865F2) // blurple
+
+		textChannel.sendMessageEmbeds(eb.build())
+                .setActionRow(
+                        Button.primary("skip", "Skip"),
+						Button.primary("shuffle", "Shuffle"),
+						Button.primary("pause", "Play/Pause"),
+                )
+                .queue()
 	}
 
 }

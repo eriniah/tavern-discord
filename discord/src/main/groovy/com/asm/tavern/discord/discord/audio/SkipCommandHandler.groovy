@@ -29,7 +29,16 @@ class SkipCommandHandler implements CommandHandler {
 	@Override
 	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
 		int skipAmount = message.args[0] ? Integer.parseInt(message.args[0]) : 1
-		audioService.skip(new GuildId(event.getGuild().getId()), skipAmount)
+		GuildId guildId = new GuildId(event.getGuild().getId())
+		String title = audioService.getNowPlaying(guildId).info.title
+		if(skipAmount == 1){
+			event.getChannel().sendMessage("Skipping: ${title}").queue()
+		}
+		else{
+			event.getChannel().sendMessage("Skipping ${skipAmount} songs").queue()
+		}
+
+		audioService.skip(guildId, skipAmount)
 		new CommandResultBuilder().success().build()
 	}
 

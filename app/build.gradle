@@ -22,7 +22,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'com.asm.tavern.discord.app.App'
+    mainClass = mainClassName
 }
 
 distributions {
@@ -50,6 +50,7 @@ jar {
 }
 
 tasks.register("scriptDeploy", Copy) {
+    new File(jar.destinationDir, "/").mkdirs()
     new File(jar.destinationDir , "/launchTavern.bat").text =
             "java -jar tavern.jar\n" +
                     "pause"

@@ -28,7 +28,17 @@ class PauseCommandHandler implements CommandHandler {
 
 	@Override
 	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
-		audioService.pause(new GuildId(event.getGuild().getId()))
+        GuildId guildId = new GuildId(event.getGuild().getId())
+        if(!audioService.getIsPaused(guildId)){
+            audioService.pause(guildId)
+            String title = audioService.getNowPlaying(guildId).info.title
+            event.getChannel().sendMessage("Pausing: ${title}").queue()
+        }
+        else if(audioService.getIsPaused(guildId)){
+            audioService.unpause(guildId)
+            String title = audioService.getNowPlaying(guildId).info.title
+            event.getChannel().sendMessage("Resuming: ${title}").queue()
+        }
 		new CommandResultBuilder().success().build()
 	}
 

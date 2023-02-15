@@ -343,4 +343,9 @@ class LavaPlayerAudioService implements AudioService {
 	void shuffle(GuildId guildId) {
 		musicManagers.get(guildId).getScheduler().shuffle()
 	}
+
+    @Override
+    boolean getIsPaused(GuildId guildId) {
+        musicManagers.get(guildId).getScheduler().getIsPaused()
+    }
 }
