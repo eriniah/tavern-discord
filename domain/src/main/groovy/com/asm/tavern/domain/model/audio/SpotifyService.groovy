@@ -89,7 +89,7 @@ class SpotifyService {
                     splitSpotifyUrl = spotifyUrl.split(PLAYLIST_STRING)[1]
                 }
                 else{
-                    //logger.debug("SpotifyURL did not contain track or playlist.")
+                    logger.debug("SpotifyURL did not contain track or playlist.")
                 }
             }
             catch (NullPointerException e){
