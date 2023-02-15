@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import net.dv8tion.jda.api.entities.TextChannel
 
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
@@ -11,6 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class TrackScheduler extends AudioEventAdapter {
 	private final AudioPlayer player
 	private BlockingQueue<AudioTrack> queue
+	private TextChannel textChannel
 
 	/**
 	 * @param player The audio player this scheduler uses
@@ -36,7 +38,7 @@ class TrackScheduler extends AudioEventAdapter {
 
 	void playNext(AudioTrack track) {
 		// possibly this should just be an error that nothing is currently in the queue and play command should be used instead,
-		// but if nothing is in the queue and you attempt to playnext you probably just want the song to play right?
+		// but if nothing is in the queue and you attempt to playNext you probably just want the song to play right?
 		if (!player.startTrack(track, true)) {
 			// add new song to queue position 0 ie: next
 			BlockingQueue<AudioTrack> modifiedQueue = new LinkedBlockingQueue<>()
@@ -89,6 +91,10 @@ class TrackScheduler extends AudioEventAdapter {
 		this.queue = shuffledQueue
 	}
 
+	void setChannelId(TextChannel textChannel) {
+		this.textChannel = textChannel
+	}
+
 	BlockingQueue<AudioTrack> getQueue() {
 		queue
 	}
@@ -103,6 +109,13 @@ class TrackScheduler extends AudioEventAdapter {
 		if (endReason.mayStartNext) {
 			nextTrack()
 		}
+	}
+
+	@Override
+	void onTrackStart(AudioPlayer player, AudioTrack track){
+		textChannel.sendMessage("Now Playing: ${track.getInfo().title}").queue()
+
+
 	}
 
 }
