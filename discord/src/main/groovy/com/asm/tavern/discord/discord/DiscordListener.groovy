@@ -32,6 +32,11 @@ class DiscordListener extends ListenerAdapter {
 		String message = event.getMessage().getContentRaw().trim()
 		CommandMessage result = parser.parse(message)
 
+		if (event.author.bot) {
+			logger.trace("Throwing out bot message")
+			return
+		}
+
 		if (!result.commandList.isEmpty()) {
 			if (!result.usage.canUse(event.getMember())) {
 				event.getChannel().sendMessage("You do not have permissions for this command").queue()
