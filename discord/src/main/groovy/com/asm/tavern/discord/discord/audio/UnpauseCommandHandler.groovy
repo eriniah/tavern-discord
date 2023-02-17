@@ -29,6 +29,9 @@ class UnpauseCommandHandler implements CommandHandler {
 	@Override
 	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
 		audioService.unpause(new GuildId(event.getGuild().getId()))
+		GuildId guildId = new GuildId(event.getGuild().getId())
+		String title = audioService.getNowPlaying(guildId).info.title
+		event.getChannel().sendMessage("Resuming: ${title}").queue()
 		new CommandResultBuilder().success().build()
 	}
 }

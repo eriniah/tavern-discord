@@ -6,11 +6,13 @@ import com.asm.tavern.domain.model.audio.ActiveAudioTrack
 import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.GuildId
-import net.dv8tion.jda.api.entities.EmbedType
-import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.components.*
 
 import javax.annotation.Nonnull
+import java.awt.Color
 import java.time.Duration
 import java.util.function.Function
 
@@ -39,21 +41,29 @@ class NowPlayingCommandHandler implements CommandHandler {
 			String.format("%d:%2d", (duration.getSeconds()/60).intValue(), (duration.getSeconds()%60).intValue()).replace(" ", "0")
 		}
 
+		Function<String, String> getVideoImageID = (String videoUrl) -> {
+			String videoImageId = videoUrl.split("(?<=watch\\?v=)")[1]
+			videoUrl = String.format("https://img.youtube.com/vi/%s/sddefault.jpg", videoImageId)
+		}
+
 		if (track) {
-			event.getChannel().sendMessage(new MessageEmbed(
-					track.info.url.toString(),
-					track.info.title,
-					track.info.isStream() ? "Streaming" : "${formatTime(track.currentTime)}/${formatTime(track.info.duration)}",
-					EmbedType.VIDEO,
-					null,
-					0,
-					null,
-					null,
-					new MessageEmbed.AuthorInfo(track.info.author, null, null, null),
-					new MessageEmbed.VideoInfo(track.info.url.toString(), 400, 300),
-					null,
-					null,
-					null)).queue()
+			String videoImgUrl = getVideoImageID(track.info.url.toString())
+			EmbedBuilder eb = new EmbedBuilder()
+			//eb.setTitle(track.info.title, track.info.url.toString()) // large hyperlink
+			eb.setAuthor(track.info.author, track.info.url.toString()) // , videoImgUrl) // image for author top left
+			//eb.setImage(videoImgUrl) // Bottom large image
+			eb.setThumbnail(videoImgUrl) //Top right corner image
+			eb.setDescription("Now Playing: ${track.info.title}")
+			eb.addField("Duration:", "${formatTime(track.currentTime)}/${formatTime(track.info.duration)}", false)
+			eb.setColor(0x5865F2) // blurple
+
+			event.getChannel().sendMessageEmbeds(eb.build())
+					.setActionRow(
+							Button.primary("skip", "Skip"),
+							Button.primary("shuffle", "Shuffle"),
+							Button.primary("pause", "Play/Pause"),
+					)
+					.queue()
 		}
 		new CommandResultBuilder().success().build()
 	}

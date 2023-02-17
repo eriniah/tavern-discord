@@ -39,4 +39,6 @@ interface AudioService {
 
 	ActiveAudioTrack getNowPlaying(GuildId guildId)
 
+	boolean getIsPaused(GuildId guildId)
+
 }

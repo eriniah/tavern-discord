@@ -53,12 +53,16 @@ class LavaPlayerAudioService implements AudioService {
 
 	@Override
 	void play(TextChannel textChannel, URI uri) {
-		GuildMusicManager musicManager = musicManagers.get(new GuildId(textChannel.getGuild().getId()))
+		GuildId guildId = new GuildId(textChannel.getGuild().getId())
+		GuildMusicManager musicManager = musicManagers.get(guildId)
+		musicManager.scheduler.setChannelId(textChannel)
 
 			playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
 				@Override
 				void trackLoaded(AudioTrack track) {
-					textChannel.sendMessage("Adding to queue ${track.getInfo().title}").queue()
+					if(getNowPlaying(guildId)){
+						textChannel.sendMessage("Adding to queue ${track.getInfo().title}").queue()
+					}
 					scheduleTrack(musicManager, track)
 				}
 
@@ -97,13 +101,17 @@ class LavaPlayerAudioService implements AudioService {
 
 	@Override
 	void play(TextChannel textChannel, String searchString) {
-		GuildMusicManager musicManager = musicManagers.get(new GuildId(textChannel.getGuild().getId()))
+		GuildId guildId = new GuildId(textChannel.getGuild().getId())
+		GuildMusicManager musicManager = musicManagers.get(guildId)
+		musicManager.scheduler.setChannelId(textChannel)
+
 
 		playerManager.loadItemOrdered(musicManager, YOUTUBE_SEARCH_PREFIX + searchString, new AudioLoadResultHandler() {
 			@Override
 			void trackLoaded(AudioTrack track) {
-				textChannel.sendMessage("Adding to queue ${track.getInfo().title}").queue()
-
+				if(getNowPlaying(guildId)){
+					textChannel.sendMessage("Adding to queue ${track.getInfo().title}").queue()
+				}
 				scheduleTrack(musicManager, track)
 			}
 
@@ -114,10 +122,10 @@ class LavaPlayerAudioService implements AudioService {
 				if (firstTrack == null) {
 					firstTrack = playlist.getTracks().first()
 				}
-
+				if(getNowPlaying(guildId)){
+					textChannel.sendMessage("Adding to queue ${firstTrack.getInfo().title}").queue()
+				}
 				scheduleTrack(musicManager, firstTrack)
-
-				textChannel.sendMessage("Adding to queue ${firstTrack.info.title}").queue()
 			}
 
 			@Override
@@ -136,14 +144,13 @@ class LavaPlayerAudioService implements AudioService {
     void playNext(TextChannel textChannel, URI uri) {
         GuildId guildId = new GuildId(textChannel.getGuild().getId())
         GuildMusicManager musicManager = musicManagers.get(guildId)
-
+		musicManager.scheduler.setChannelId(textChannel)
 
 
         playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
             @Override
             void trackLoaded(AudioTrack track) {
                 if(!getNowPlaying(guildId)){
-                    textChannel.sendMessage("Playing ${track.getInfo().title}").queue()
                     musicManagers.get(guildId).getScheduler().playNext(track)
                 }
                 else{
@@ -207,6 +214,7 @@ class LavaPlayerAudioService implements AudioService {
     void playNext(TextChannel textChannel, String searchString) {
         GuildId guildId = new GuildId(textChannel.getGuild().getId())
         GuildMusicManager musicManager = musicManagers.get(guildId)
+		musicManager.scheduler.setChannelId(textChannel)
 
         // playNext with a search string gets a playlist back from the search, so handle it like we only want the first song.
 
@@ -215,7 +223,6 @@ class LavaPlayerAudioService implements AudioService {
             @Override
             void trackLoaded(AudioTrack track) {
                 if(!getNowPlaying(guildId)){
-                    textChannel.sendMessage("Playing ${track.getInfo().title}").queue()
                     scheduleTrack(musicManager, track)
                 }
                 else{
@@ -234,7 +241,6 @@ class LavaPlayerAudioService implements AudioService {
                 }
                 if(!getNowPlaying(guildId)){
                     scheduleTrack(musicManager, playlist.getTracks().first())
-                    textChannel.sendMessage("Adding ${firstTrack.info.title} to queue.").queue()
                 }
                 else{
                     scheduleTrackNext(musicManager, playlist.getTracks().first())
@@ -337,4 +343,9 @@ class LavaPlayerAudioService implements AudioService {
 	void shuffle(GuildId guildId) {
 		musicManagers.get(guildId).getScheduler().shuffle()
 	}
+
+    @Override
+    boolean getIsPaused(GuildId guildId) {
+        musicManagers.get(guildId).getScheduler().getIsPaused()
+    }
 }

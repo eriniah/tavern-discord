@@ -50,19 +50,24 @@ class SpotifyService {
     private void getAuthorizationToken(){
         String encodedClientIdSecret = Base64.encoder.encodeToString((client_id + ':' + client_secret).getBytes())
 
-        HttpResponse<String> response
-        HttpClient httpClient = HttpClient.newHttpClient()
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(API_CLIENT_CREDENTIALS_TOKEN_STRING))
-                .header(HEADER_AUTHORIZATION_KEY, PREFIX_BASIC_TOKEN + encodedClientIdSecret)
-                .header(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_VALUE)
-                .timeout(Duration.ofSeconds(TIMEOUT_DURATION))
-                .POST(HttpRequest.BodyPublishers.ofString("${BODY_KEY_GRANT_TYPE}=${BODY_VALUE_CLIENT_CREDENTIALS}"))
-                .build()
+        try{
+            HttpResponse<String> response
+            HttpClient httpClient = HttpClient.newHttpClient()
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(API_CLIENT_CREDENTIALS_TOKEN_STRING))
+                    .header(HEADER_AUTHORIZATION_KEY, PREFIX_BASIC_TOKEN + encodedClientIdSecret)
+                    .header(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_VALUE)
+                    .timeout(Duration.ofSeconds(TIMEOUT_DURATION))
+                    .POST(HttpRequest.BodyPublishers.ofString("${BODY_KEY_GRANT_TYPE}=${BODY_VALUE_CLIENT_CREDENTIALS}"))
+                    .build()
 
-        response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        JSONObject jsonObject = new JSONObject(response.body())
-        this.token = jsonObject.getString("access_token")
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+            JSONObject jsonObject = new JSONObject(response.body())
+            this.token = jsonObject.getString("access_token")
+        }
+        catch (Exception e){
+            logger.error("There was an error retrieving the access token from spotify.")
+        }
     }
 
     Optional<List<Song>> getListOfSongsFromURL(String spotifyUrl){

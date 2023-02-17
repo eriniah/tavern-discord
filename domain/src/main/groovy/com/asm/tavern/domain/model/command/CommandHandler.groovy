@@ -1,5 +1,6 @@
 package com.asm.tavern.domain.model.command
 
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 import javax.annotation.Nonnull
@@ -26,4 +27,13 @@ interface CommandHandler {
 	 * @return result of the command
 	 */
 	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message)
+	/**
+	 * Handle the invocation of the command
+	 * @param event the discord event
+	 * @param args arguments for the command invocation
+	 * @return result of the command
+	 */
+	default CommandResult handle(@Nonnull ButtonClickEvent event, CommandMessage message){
+		new CommandResultBuilder().success().build()
+	}
 }
