@@ -48,8 +48,7 @@ class PlayNextCommandHandler implements CommandHandler {
         else{
             songService.songFromString(songId).ifPresentOrElse(song -> {
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())
-                song.id != null ? audioService.playNext(event.getChannel(), song.id.toString()) :
-                        audioService.playNext(event.getChannel(), song.uri)
+                audioService.playNext(event.getChannel(), song.uri)
             }, () -> {
                 // this will search the message on youtube
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())

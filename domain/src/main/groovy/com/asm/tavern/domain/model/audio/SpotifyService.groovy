@@ -20,8 +20,9 @@ class SpotifyService {
     final String API_PLAYLIST_STRING =  "https://api.spotify.com/v1/playlists/{id}/tracks"
     final String API_TRACK_STRING =  "https://api.spotify.com/v1/tracks/{id}"
     final String API_CLIENT_CREDENTIALS_TOKEN_STRING = "https://accounts.spotify.com/api/token"
-    final String TRACK_STRING = "track[/:]"
-    final String PLAYLIST_STRING = "playlist/"
+    final String TRACK_STRING = "(.*)track[/:]"
+    final String REGEX_ANY_CHAR_QUANTIFIER = "(.*)"
+    final String PLAYLIST_STRING = "(.*)playlist[/:]"
     final String HEADER_AUTHORIZATION_KEY = "Authorization"
     final String HEADER_CONTENT_TYPE_KEY = "Content-Type"
     final String HEADER_CONTENT_TYPE_VALUE = "application/x-www-form-urlencoded"
@@ -80,11 +81,11 @@ class SpotifyService {
             getAuthorizationToken()
 
             try{
-                if(spotifyUrl.contains(TRACK_STRING)){
+                if(spotifyUrl.matches(TRACK_STRING + REGEX_ANY_CHAR_QUANTIFIER)){
                     isTrack = true
                     splitSpotifyUrl = spotifyUrl.split(TRACK_STRING)[1]
                 }
-                else if(spotifyUrl.contains(PLAYLIST_STRING)){
+                else if(spotifyUrl.matches(PLAYLIST_STRING + REGEX_ANY_CHAR_QUANTIFIER)){
                     isPlaylist = true
                     splitSpotifyUrl = spotifyUrl.split(PLAYLIST_STRING)[1]
                 }
@@ -102,14 +103,20 @@ class SpotifyService {
                 if(isTrack){
                     URI apiURI = new URI(API_TRACK_STRING.replaceFirst("(\\{id})", splitSpotifyUrl))
                     HttpRequest request = HttpRequest.newBuilder()
-                        .uri(apiURI)
-                        .header(HEADER_AUTHORIZATION_KEY, PREFIX_BEARER_TOKEN + token)
-                        .timeout(Duration.ofSeconds(TIMEOUT_DURATION))
-                        .GET()
-                        .build()
+                            .uri(apiURI)
+                            .header(HEADER_AUTHORIZATION_KEY, PREFIX_BEARER_TOKEN + token)
+                            .timeout(Duration.ofSeconds(TIMEOUT_DURATION))
+                            .GET()
+                            .build()
 
                     response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-                    String songTitle = new JSONObject(response.body()).getString(RESPONSE_KEY_TRACK_TITLE)
+
+                    JSONObject responseJSON = new JSONObject(response.body())
+                    String songTitle = responseJSON.getString(RESPONSE_KEY_TRACK_TITLE)
+                    responseJSON.getJSONArray("artists").collect().forEach(artist ->{
+                        String artistName = artist.getAt("name").toString()
+                        songTitle += " " + artistName
+                    })
 
                     songTitleList.add(new Song(new SongId(songTitle), new URI("")))
                 }
@@ -124,8 +131,11 @@ class SpotifyService {
 
                     response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
                     JSONObject responseJSON = new JSONObject(response.body())
-                    responseJSON.getJSONArray("items").collect().forEach(track ->{
+                    responseJSON.getJSONArray("items").collect().forEach( track -> {
                         String songTitle = track.getAt("track").getAt("name").toString()
+                        track.getAt("track").getAt("artists").collect().forEach( artist -> {
+                            songTitle += " " + artist.getAt("name")
+                        })
                         songTitleList.add(new Song(new SongId(songTitle), new URI("")))
                     })
                 }
