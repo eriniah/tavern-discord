@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.requests.GatewayIntent
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 
@@ -32,6 +33,7 @@ class Discord {
 					.setActivity(Activity.listening("Beer"))
 					.setEventPool(Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("JDA Thread %d").build()))
 					.addEventListeners(new DiscordListener(commandParser, commandHandlerRegistry))
+					.enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
 					.build()
 		}
 	}

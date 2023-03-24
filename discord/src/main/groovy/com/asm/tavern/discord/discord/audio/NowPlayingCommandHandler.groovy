@@ -7,8 +7,8 @@ import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.GuildId
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.*
 
 import javax.annotation.Nonnull
@@ -34,7 +34,7 @@ class NowPlayingCommandHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		ActiveAudioTrack track = audioService.getNowPlaying(new GuildId(event.getGuild().getId()))
 
 		Function<Duration, String> formatTime = (Duration duration) -> {

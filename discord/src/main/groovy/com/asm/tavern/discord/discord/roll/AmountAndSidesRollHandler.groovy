@@ -4,7 +4,7 @@ package com.asm.tavern.discord.discord.roll
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.roll.RollService
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 
@@ -30,7 +30,7 @@ class AmountAndSidesRollHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		try {
 			int amount = Integer.parseInt(message.args.first())
 			int sides = Integer.parseInt(message.args.last())

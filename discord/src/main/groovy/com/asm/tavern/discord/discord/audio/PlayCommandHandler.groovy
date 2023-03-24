@@ -6,7 +6,7 @@ import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.audio.SongService
 import com.asm.tavern.domain.model.audio.SpotifyService
 import com.asm.tavern.domain.model.command.*
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull
 
@@ -32,7 +32,7 @@ class PlayCommandHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		String songId = message.args.first()
 
 		//Check for spotify link here so we can play multiple times for a playlist from spotify
@@ -40,7 +40,7 @@ class PlayCommandHandler implements CommandHandler {
             spotifyService.getListOfSongsFromURL(songId).ifPresentOrElse( songList -> {
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())
                 songList.stream()
-                        .forEach(song -> audioService.play(event.getChannel(), song.id.toString()))
+                        .forEach(song -> audioService.play(event.getChannel().asTextChannel(), song.id.toString()))
 
             }, () -> {
                 event.getChannel().sendMessage("Could not retrieve spotify songs from ${songId}")
@@ -49,11 +49,11 @@ class PlayCommandHandler implements CommandHandler {
         else{
             songService.songFromString(songId).ifPresentOrElse(song -> {
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())
-                audioService.playNext(event.getChannel(), song.uri)
+                audioService.playNext(event.getChannel().asTextChannel(), song.uri)
             }, () -> {
                 // this will search the message on youtube
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())
-                audioService.play(event.getChannel(), message.args.join(" "))
+                audioService.play(event.getChannel().asTextChannel(), message.args.join(" "))
             })
         }
 		new CommandResultBuilder().success().build()

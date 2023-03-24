@@ -6,7 +6,7 @@ import com.asm.tavern.domain.model.audio.Song
 import com.asm.tavern.domain.model.audio.SongService
 import com.asm.tavern.domain.model.command.*
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull
 import java.util.function.Function
@@ -31,13 +31,13 @@ class SongsCommandHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		int chunkSize = 10
 		String currentCategory = ""
 
 		// Function for pushing message so message can be pushed when max chunk size to avoid discord max message length. Also empty builder when pushed
 		Function<StringBuilder, String> pushMessage = (StringBuilder builder) -> {
-			event.getChannel().sendMessage(new MessageEmbed(null, "${currentCategory} Songs", builder.toString(), null, null, 0xFF0000, null, null, null, null, null,null, null)).queue()
+			event.getChannel().asTextChannel().sendMessageEmbeds(new MessageEmbed(null, "${currentCategory} Songs", builder.toString(), null, null, 0xFF0000, null, null, null, null, null,null, null)).queue()
 			builder.setLength(0)
 		}
 

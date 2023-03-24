@@ -2,7 +2,7 @@ package com.asm.tavern.discord.discord.roll
 
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.command.*
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull
 
@@ -19,7 +19,7 @@ class RollTideHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		event.getChannel().sendMessage('What are you doing step bro!?').queue()
 		return new CommandResultBuilder().success().build()
 	}
