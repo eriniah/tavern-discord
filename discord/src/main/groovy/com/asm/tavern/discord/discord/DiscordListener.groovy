@@ -7,8 +7,9 @@ import com.asm.tavern.domain.model.command.CommandHandlerRegistry
 import com.asm.tavern.domain.model.command.CommandMessage
 import com.asm.tavern.domain.model.discord.GuildId
 import com.asm.tavern.domain.model.discord.VoiceChannelId
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.events.interaction.*
 import org.slf4j.ext.XLogger
@@ -28,7 +29,7 @@ class DiscordListener extends ListenerAdapter {
 	}
 
 	@Override
-	void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+	void onMessageReceived(@Nonnull MessageReceivedEvent event) {
 		String message = event.getMessage().getContentRaw().trim()
 		CommandMessage result = parser.parse(message)
 
@@ -58,7 +59,7 @@ class DiscordListener extends ListenerAdapter {
 	}
 
 	@Override
-	void onGuildVoiceLeave(@Nonnull GuildVoiceLeaveEvent event) {
+	void onGuildVoiceUpdate(@Nonnull GuildVoiceUpdateEvent event) {
 		// Leave if everyone else leaves the chat
 		GuildId guildId = new GuildId(event.getGuild().getId())
 		VoiceChannelId voiceChannelId = new VoiceChannelId(event.getChannelLeft().getId())
@@ -69,7 +70,7 @@ class DiscordListener extends ListenerAdapter {
 	}
 
 	@Override
-	void onButtonClick(@Nonnull ButtonClickEvent event) {
+	void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
 		String message = event.getButton().id
 		CommandMessage result = parser.parse(parser.prefix + message)
 		event.deferEdit().queue()
@@ -84,7 +85,7 @@ class DiscordListener extends ListenerAdapter {
 
 			CommandHandler handler = commandHandlerRegistry.getHandler(result)
 			if (handler) {
-				if (!handler.handle(new GuildMessageReceivedEvent(event.getJDA(), event.responseNumber, event.getMessage()), result)) {
+				if (!handler.handle(new MessageReceivedEvent(event.getJDA(), event.responseNumber, event.getMessage()), result)) {
 					logger.error("Failed to handle command ${parser.prefix}${result.getCommandString()}")
 				}
 			} else {

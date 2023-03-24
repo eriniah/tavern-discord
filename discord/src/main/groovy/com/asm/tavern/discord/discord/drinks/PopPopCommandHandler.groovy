@@ -7,7 +7,7 @@ import com.asm.tavern.domain.model.discord.Mention
 import com.asm.tavern.domain.model.drinks.DrinkService
 import com.asm.tavern.domain.model.drinks.MemberDrinkResult
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull
 import java.util.stream.Collectors
@@ -30,10 +30,10 @@ class PopPopCommandHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		DiscordUtils.getUsersVoiceChannel(event.getJDA(), event.getAuthor().id)
 				.map(channel -> {
-					List<MemberDrinkResult> results = drinkService.popPop(channel.members)
+					List<MemberDrinkResult> results = drinkService.popPop(channel.getMembers())
 					if (results[0].shot) {
 						event.getChannel().sendMessage("Pop Pop!\nSucks to suck. Everyone take a shot!").queue()
 					} else {

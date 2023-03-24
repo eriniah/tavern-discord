@@ -4,7 +4,7 @@ import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.audio.SongId
 import com.asm.tavern.domain.model.audio.SongService
 import com.asm.tavern.domain.model.command.*
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull
 
@@ -26,7 +26,7 @@ class AddSongWithCategoryCommandHandler implements CommandHandler {
     }
 
     @Override
-    CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+    CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
         String id = message.args[1]
         String uri = message.args[2]
         String category = message.args[3]

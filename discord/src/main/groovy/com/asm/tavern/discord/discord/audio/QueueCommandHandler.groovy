@@ -7,7 +7,7 @@ import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.audio.AudioTrackInfo
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.GuildId
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 import java.time.Duration
@@ -34,7 +34,7 @@ class QueueCommandHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		List<AudioTrackInfo> queue = audioService.getQueue(new GuildId(event.getGuild().getId()))
 		logger.debug("The queue has ${queue.size()} tracks")
 		if (!queue.isEmpty()) {

@@ -2,11 +2,13 @@ package com.asm.tavern.discord.audio
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.components.*
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 
 import java.time.Duration
 import java.util.concurrent.BlockingQueue
@@ -17,6 +19,8 @@ class TrackScheduler extends AudioEventAdapter {
 	private final AudioPlayer player
 	private BlockingQueue<AudioTrack> queue
 	private TextChannel textChannel
+	private final int maxRetryCount = 3
+	private int retryCount = 0
 
 	/**
 	 * @param player The audio player this scheduler uses
@@ -147,6 +151,21 @@ class TrackScheduler extends AudioEventAdapter {
 						Button.primary("pause", "Play/Pause"),
                 )
                 .queue()
+	}
+
+	@Override
+	void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+		// Retry X times.
+		if(retryCount < maxRetryCount)
+		{
+			retryCount++
+			textChannel.sendMessage("Failure playing track: " + track.info.title + " attempting to retry. Attempt Number: " + retryCount).queue()
+			player.startTrack(track.makeClone(), false)
+		}
+		else{
+			textChannel.sendMessage("Failed to play track: " + track.info.title + " " + retryCount + " times, track will be skipped. Video may be unavailable."  + retryCount).queue()
+			retryCount = 0
+		}
 	}
 
 }

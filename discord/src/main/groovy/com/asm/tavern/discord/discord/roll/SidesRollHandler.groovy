@@ -4,7 +4,7 @@ package com.asm.tavern.discord.discord.roll
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.roll.RollService
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull
 
@@ -26,7 +26,7 @@ class SidesRollHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		try {
 			int sides = Integer.parseInt(message.args.first())
 			int roll = rollService.rollSingle(sides)

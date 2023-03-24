@@ -3,7 +3,7 @@ package com.asm.tavern.discord.discord.help
 import com.asm.tavern.discord.discord.command.parser.CommandParser
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.command.*
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 
@@ -28,7 +28,7 @@ class CommandHelpHandler implements CommandHandler {
 	}
 
 	@Override
-	CommandResult handle(@Nonnull GuildMessageReceivedEvent event, CommandMessage message) {
+	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		String commandMessage = "${commandParser.prefix}${String.join(" ", message.args)}"
 		CommandMessage commandToHelpWith = commandParser.getCommandFromMessage(commandMessage)
 		if (commandToHelpWith.commandList.isEmpty()) {
