@@ -10,13 +10,13 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import javax.annotation.Nonnull
 
 class PlayNextCommandHandler implements CommandHandler {
-    private final AudioService audioService
     private final SongService songService
+    private final AudioService audioService
     private final SpotifyService spotifyService
 
     PlayNextCommandHandler(SongService songService, AudioService audioService) {
-        this.audioService = audioService
         this.songService = songService
+        this.audioService = audioService
         this.spotifyService = songService.getSpotifyService()
     }
 
