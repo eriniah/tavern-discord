@@ -1,6 +1,5 @@
 package com.asm.tavern.discord.discord.audio
 
-
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.audio.SongService
@@ -49,7 +48,7 @@ class PlayCommandHandler implements CommandHandler {
         else{
             songService.songFromString(songId).ifPresentOrElse(song -> {
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())
-                audioService.playNext(event.getChannel().asTextChannel(), song.uri)
+                audioService.play(event.getChannel().asTextChannel(), song.uri)
             }, () -> {
                 // this will search the message on youtube
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager())
