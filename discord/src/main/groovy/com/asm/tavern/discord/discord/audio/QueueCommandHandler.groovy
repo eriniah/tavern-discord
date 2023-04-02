@@ -7,10 +7,7 @@ import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.audio.AudioTrackInfo
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.GuildId
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 import java.time.Duration
@@ -38,12 +35,14 @@ class QueueCommandHandler implements CommandHandler {
 
 	@Override
 	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
-		List<AudioTrackInfo> queue = audioService.getQueue(new GuildId(event.getGuild().getId()))
+        GuildId guildId = new GuildId(event.getGuild().getId())
+		List<AudioTrackInfo> queue = audioService.getQueue(guildId)
 		logger.debug("The queue has ${queue.size()} tracks")
 		if (!queue.isEmpty()) {
 			int songIndex = 1
 			int maxOutput = 20
 			Duration totalDuration = Duration.ZERO
+            Duration nowPlayingTimeLeft = audioService.getNowPlaying(guildId).info.duration - audioService.getNowPlaying(guildId).getCurrentTime()
 
 			Function<Duration, String> formatTime = (Duration duration) -> {
 				String.format("%d:%2d", (duration.getSeconds()/60).intValue(), (duration.getSeconds()%60).intValue()).replace(" ", "0")
@@ -68,32 +67,8 @@ class QueueCommandHandler implements CommandHandler {
 			if (queue.size() > maxOutput) {
 				event.getChannel().sendMessage("+${queue.size() - maxOutput} more").queue()
 			}
-			event.getChannel().sendMessage("Remaining Duration: ${formatTime(totalDuration)}").queue()
+			event.getChannel().sendMessage("Time left in queue: ${formatTime(totalDuration)} with ${formatTime(nowPlayingTimeLeft)} left in the now playing song").queue()
 		}
-
-
-		List<SelectOption> selectOptionList = new ArrayList<SelectOption>()
-		int position = 0
-		for(AudioTrackInfo trackInfo : queue.toList()){
-			if(position >= 23)
-				break
-			selectOptionList.add(new SelectOption(trackInfo.title, "queuePosition_" + position))
-			position++
-		}
-
-		EmbedBuilder eb = new EmbedBuilder()
-		eb.setAuthor("Queue")
-		eb.setDescription("Select song from queue to modify")
-		eb.setColor(0x5865F2)
-		event.getChannel().sendMessageEmbeds(eb.build())
-				.addActionRow(
-						StringSelectMenu.create("choose-song")
-								.addOption("Previous 25", "previousQueue")
-								.addOptions(selectOptionList)
-								.addOption("Next 25", "nextQueue")
-								.build())
-				.queue()
-		
 		new CommandResultBuilder().success().build()
 	}
 
