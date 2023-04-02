@@ -7,7 +7,10 @@ import com.asm.tavern.domain.model.audio.AudioService
 import com.asm.tavern.domain.model.audio.AudioTrackInfo
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.GuildId
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
 import java.time.Duration
@@ -67,6 +70,30 @@ class QueueCommandHandler implements CommandHandler {
 			}
 			event.getChannel().sendMessage("Remaining Duration: ${formatTime(totalDuration)}").queue()
 		}
+
+
+		List<SelectOption> selectOptionList = new ArrayList<SelectOption>()
+		int position = 0
+		for(AudioTrackInfo trackInfo : queue.toList()){
+			if(position >= 23)
+				break
+			selectOptionList.add(new SelectOption(trackInfo.title, "queuePosition_" + position))
+			position++
+		}
+
+		EmbedBuilder eb = new EmbedBuilder()
+		eb.setAuthor("Queue")
+		eb.setDescription("Select song from queue to modify")
+		eb.setColor(0x5865F2)
+		event.getChannel().sendMessageEmbeds(eb.build())
+				.addActionRow(
+						StringSelectMenu.create("choose-song")
+								.addOption("Previous 25", "previousQueue")
+								.addOptions(selectOptionList)
+								.addOption("Next 25", "nextQueue")
+								.build())
+				.queue()
+		
 		new CommandResultBuilder().success().build()
 	}
 

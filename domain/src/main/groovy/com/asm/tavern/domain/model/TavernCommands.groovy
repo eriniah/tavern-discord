@@ -114,6 +114,12 @@ class TavernCommands {
 			.add(usage('skip amount', 'Skip an amount of songs').add(argument('amount', 'The amount of songs to skip').example('5')))
 			.build()
 
+	static final Command SKIP_TIME = command('st', 'Skip seconds from playing track')
+			.tag(Tags.MUSIC)
+			.add(usage('default', 'Skip 60 seconds'))
+			.add(usage('skip amount', 'Skip X seconds').add(argument('amount', 'The amount of seconds to skip').example('60')))
+			.build()
+
 	static final Command SHUFFLE = command('shuffle', 'Shuffle the current song queue')
 			.tag(Tags.MUSIC)
 			.add(usage('default', 'Shuffle the current song queue'))
