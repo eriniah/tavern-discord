@@ -148,21 +148,24 @@ class TavernCommands {
 
 	static class SongsUsages {
 		static final CommandArgumentUsage DEFAULT = usage('default', 'List songs').build()
-		static final CommandArgumentUsage ADD_WITH_CATEGORY = usage('add ', 'Register a new song with category')
+		static final CommandArgumentUsage ADD_WITH_CATEGORY = usage('add', 'Register a new song with category')
+				.add(argument('add', 'required').example('add'))
 				.add(argument('id', 'The id to register the song as').example('chuchu'))
 				.add(argument('url', 'The url of the song to register').example('https://www.youtube.com/watch?v=5d32-RnUlAA'))
 				.add(argument('category', 'The category of the song to register').example('powerhour'))
 				.requireRole(Roles.DJ)
 				.build()
 
-		static final CommandArgumentUsage ADD = usage('add', 'Register a new song')
+		static final CommandArgumentUsage ADD = usage('add', 'Register a new song.')
+				.add(argument('add', 'required').example('add'))
 				.add(argument('id', 'The id to register the song as').example('chuchu'))
 				.add(argument('url', 'The url of the song to register').example('https://www.youtube.com/watch?v=5d32-RnUlAA'))
 				.requireRole(Roles.DJ)
 				.build()
 
 		static final CommandArgumentUsage REMOVE = usage('remove', 'Remove a registered song')
-				.add(argument('id', 'The id of the song to remove').example('chchu'))
+				.add(argument('remove', 'required').example('remove'))
+				.add(argument('id', 'The id of the song to remove').example('chuchu'))
 				.requireRole(Roles.DJ)
 				.build()
 	}
