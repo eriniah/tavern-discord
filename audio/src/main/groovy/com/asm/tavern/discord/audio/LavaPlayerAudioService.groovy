@@ -292,6 +292,14 @@ class LavaPlayerAudioService implements AudioService {
 	}
 
 	@Override
+	void skipTime(GuildId guildId, int amount) {
+		GuildMusicManager manager = musicManagers.get(guildId)
+		if(null != manager) {
+			manager.getScheduler().skipTime(amount)
+		}
+	}
+
+	@Override
 	void stop(GuildId guildId) {
 		GuildMusicManager manager = musicManagers.get(guildId)
 		if (null != manager) {

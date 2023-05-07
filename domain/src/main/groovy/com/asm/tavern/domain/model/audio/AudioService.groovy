@@ -21,6 +21,8 @@ interface AudioService {
 
 	void skip(GuildId guildId, int amount)
 
+	void skipTime(GuildId guildid, int amount)
+
 	void stop(GuildId guildId)
 
 	void clear(GuildId guildId)

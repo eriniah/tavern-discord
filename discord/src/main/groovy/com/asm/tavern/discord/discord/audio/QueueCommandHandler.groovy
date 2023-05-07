@@ -35,12 +35,14 @@ class QueueCommandHandler implements CommandHandler {
 
 	@Override
 	CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
-		List<AudioTrackInfo> queue = audioService.getQueue(new GuildId(event.getGuild().getId()))
+        GuildId guildId = new GuildId(event.getGuild().getId())
+		List<AudioTrackInfo> queue = audioService.getQueue(guildId)
 		logger.debug("The queue has ${queue.size()} tracks")
 		if (!queue.isEmpty()) {
 			int songIndex = 1
 			int maxOutput = 20
 			Duration totalDuration = Duration.ZERO
+            Duration nowPlayingTimeLeft = audioService.getNowPlaying(guildId).info.duration - audioService.getNowPlaying(guildId).getCurrentTime()
 
 			Function<Duration, String> formatTime = (Duration duration) -> {
 				String.format("%d:%2d", (duration.getSeconds()/60).intValue(), (duration.getSeconds()%60).intValue()).replace(" ", "0")
@@ -65,7 +67,7 @@ class QueueCommandHandler implements CommandHandler {
 			if (queue.size() > maxOutput) {
 				event.getChannel().sendMessage("+${queue.size() - maxOutput} more").queue()
 			}
-			event.getChannel().sendMessage("Remaining Duration: ${formatTime(totalDuration)}").queue()
+			event.getChannel().sendMessage("Time left in queue: ${formatTime(totalDuration)} with ${formatTime(nowPlayingTimeLeft)} left in the now playing song").queue()
 		}
 		new CommandResultBuilder().success().build()
 	}

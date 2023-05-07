@@ -125,6 +125,7 @@ class App {
 			.add(new NowPlayingCommandHandler(audioService))
 			.add(new StopCommandHandler(audioService))
 			.add(new SkipCommandHandler(audioService))
+			.add(new SkipTimeCommandHandler(audioService))
 			.add(new PauseCommandHandler(audioService))
 			.add(new UnpauseCommandHandler(audioService))
 			.add(new JoinCommandHandler(audioService))

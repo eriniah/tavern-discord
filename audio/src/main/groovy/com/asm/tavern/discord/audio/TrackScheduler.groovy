@@ -72,6 +72,11 @@ class TrackScheduler extends AudioEventAdapter {
 		nextTrack()
 	}
 
+	void skipTime(int amount) {
+		if(player.getPlayingTrack().isSeekable())
+			player.getPlayingTrack().setPosition(player.getPlayingTrack().getPosition() + (amount * 1000))
+	}
+
 	void stopAndClear() {
 		clear()
 		player.stopTrack()
