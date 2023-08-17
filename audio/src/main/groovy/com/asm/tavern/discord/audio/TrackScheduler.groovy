@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.components.*
 import net.dv8tion.jda.api.interactions.components.buttons.Button
+import org.slf4j.ext.XLogger
+import org.slf4j.ext.XLoggerFactory
 
 import java.time.Duration
 import java.util.concurrent.BlockingQueue
@@ -16,6 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.function.Function
 
 class TrackScheduler extends AudioEventAdapter {
+	private static final XLogger logger = XLoggerFactory.getXLogger(TrackScheduler.class)
 	private final AudioPlayer player
 	private BlockingQueue<AudioTrack> queue
 	private TextChannel textChannel
@@ -135,19 +138,31 @@ class TrackScheduler extends AudioEventAdapter {
 		}
 
 		Function<String, String> getVideoImageID = (String videoUrl) -> {
-			String videoImageId = videoUrl.split("(?<=watch\\?v=)")[1]
-			videoUrl = String.format("https://img.youtube.com/vi/%s/sddefault.jpg", videoImageId)
+			try{
+				String videoImageId = videoUrl.split("(?<=watch\\?v=)")[1]
+				videoUrl = String.format("https://img.youtube.com/vi/%s/sddefault.jpg", videoImageId)
+			}
+			catch (Exception e){
+				logger.info("No VideoImage Found " + e)
+			}
+
 		}
 
-		String videoImgUrl = getVideoImageID(track.info.uri.toString())
 		EmbedBuilder eb = new EmbedBuilder()
-		//eb.setTitle(track.info.title, track.info.uri) // large hyperlink
-		eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
-		//eb.setImage(videoImgUrl) // Bottom large image
-		eb.setThumbnail(videoImgUrl) // Top right corner image
+		if(track.info.uri.contains('http')) {
+			String videoImgUrl = getVideoImageID(track.info.uri.toString())
+			//eb.setTitle(track.info.title, track.info.uri) // large hyperlink
+			eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
+			//eb.setImage(videoImgUrl) // Bottom large image
+			eb.setThumbnail(videoImgUrl) // Top right corner image
+		}
 		eb.setDescription("Now Playing: ${track.info.title}")
 		eb.addField("Duration:", "${formatTime(Duration.ofMillis(player.playingTrack.position))}/${formatTime(Duration.ofMillis(track.info.length))}", false)
 		eb.setColor(0x5865F2) // blurple
+
+
+
+
 
 		textChannel.sendMessageEmbeds(eb.build())
                 .setActionRow(

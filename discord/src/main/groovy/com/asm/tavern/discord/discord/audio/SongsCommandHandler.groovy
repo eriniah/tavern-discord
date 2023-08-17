@@ -41,15 +41,6 @@ class SongsCommandHandler implements CommandHandler {
 			builder.setLength(0)
 		}
 
-        //Only needs to be ran once on upgrade, then can be removed.
-		/**
-        for(song in songService.getSongRegistry().getAll()){
-            if(song.category == null)
-				// if song category is missing, reregister the song which will autofill category with uncategorized fixing nulls
-                songService.register(song.id, song.uri)
-        }
-	 	**/
-
 
 		StreamSupport.stream(songService.getSongRegistry().getAll().spliterator(), false)
 				.sorted(Comparator.comparing((Song song) -> song.id.id))
@@ -60,7 +51,12 @@ class SongsCommandHandler implements CommandHandler {
 					StringBuilder builder = new StringBuilder()
 					songs.forEach({ song ->
 						currentCategory = song.category
-						builder.append("[${song.id}](${DiscordUtils.escapeUrl(song.uri.toString())})\n")
+						if(song.uri.getScheme() == "http" || song.uri.getScheme() == "https") {
+							builder.append("[${song.id}](${DiscordUtils.escapeUrl(song.uri.toString())})\n")
+						}
+						else{
+							builder.append("${song.id}\n")
+						}
 						if(++count == chunkSize){
 							pushMessage(builder)
 						}
