@@ -92,7 +92,7 @@ class TrackScheduler extends AudioEventAdapter {
 
 	void skip(int amount) {
 		(1..<amount).forEach({ _ -> queue.poll()})
-		nextTrack()
+		player.stopTrack()
 	}
 
 	void skipTime(int amount) {
@@ -214,6 +214,7 @@ class TrackScheduler extends AudioEventAdapter {
 			eb.setThumbnail(videoImgUrl) // Top right corner image
 		}
 		catch (Exception e) {
+			eb.setTitle(track.info.title)
 			logger.info("Video Image was unable to be fetched: " + e)
 		}
         eb.setDescription("By: ${track.info.author}")

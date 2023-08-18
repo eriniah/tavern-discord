@@ -65,6 +65,7 @@ class NowPlayingCommandHandler implements CommandHandler {
 				eb.setThumbnail(videoImgUrl) // Top right corner image
 			}
 			catch (Exception e) {
+				eb.setTitle(track.info.title)
 				logger.info("Video Image was unable to be fetched: " + e)
 			}
             eb.setDescription("By: ${track.info.author}")
