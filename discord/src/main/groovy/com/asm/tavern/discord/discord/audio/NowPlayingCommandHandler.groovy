@@ -49,11 +49,11 @@ class NowPlayingCommandHandler implements CommandHandler {
 		if (track) {
 			String videoImgUrl = getVideoImageID(track.info.url.toString())
 			EmbedBuilder eb = new EmbedBuilder()
-			//eb.setTitle(track.info.title, track.info.url.toString()) // large hyperlink
-			eb.setAuthor(track.info.author, track.info.url.toString()) // , videoImgUrl) // image for author top left
+			eb.setTitle(track.info.title, track.info.url.toString()) // large hyperlink
+			//eb.setAuthor(track.info.title, track.info.url.toString()) // , videoImgUrl) // image for author top left
 			//eb.setImage(videoImgUrl) // Bottom large image
 			eb.setThumbnail(videoImgUrl) //Top right corner image
-			eb.setDescription("Now Playing: ${track.info.title}")
+			eb.setDescription("By: ${track.info.author}")
 			eb.addField("Duration:", "${formatTime(track.currentTime)}/${formatTime(track.info.duration)}", false)
 			eb.setColor(0x5865F2) // blurple
 

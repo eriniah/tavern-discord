@@ -34,8 +34,9 @@ dependencies {
     compile 'net.dv8tion:JDA:5.0.0-beta.6'
 
     // Logging
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-    compile group: 'org.slf4j', name: 'slf4j-ext', version: '1.7.30'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.7'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '2.0.7'
+    compile group: 'org.slf4j', name: 'slf4j-ext', version: '2.0.7'
 
     // Util
     compile group: 'com.google.guava', name: 'guava', version: '30.1-jre'
