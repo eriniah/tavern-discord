@@ -149,20 +149,19 @@ class TrackScheduler extends AudioEventAdapter {
 		}
 
 		EmbedBuilder eb = new EmbedBuilder()
-		if(track.info.uri.contains('http')) {
-			String videoImgUrl = getVideoImageID(track.info.uri.toString())
+		try {
+			String videoImgUrl = getVideoImageID(track.info.uri)
 			//eb.setTitle(track.info.title, track.info.uri) // large hyperlink
 			eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
 			//eb.setImage(videoImgUrl) // Bottom large image
 			eb.setThumbnail(videoImgUrl) // Top right corner image
 		}
+		catch (Exception e) {
+			logger.info("Video Image was unable to be fetched: " + e)
+		}
 		eb.setDescription("Now Playing: ${track.info.title}")
 		eb.addField("Duration:", "${formatTime(Duration.ofMillis(player.playingTrack.position))}/${formatTime(Duration.ofMillis(track.info.length))}", false)
 		eb.setColor(0x5865F2) // blurple
-
-
-
-
 
 		textChannel.sendMessageEmbeds(eb.build())
                 .setActionRow(
