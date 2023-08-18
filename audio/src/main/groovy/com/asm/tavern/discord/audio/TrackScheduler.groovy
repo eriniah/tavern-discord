@@ -1,6 +1,5 @@
 package com.asm.tavern.discord.audio
 
-
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
@@ -9,6 +8,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.components.buttons.Button
+import org.slf4j.ext.XLogger
+import org.slf4j.ext.XLoggerFactory
 
 import java.time.Duration
 import java.util.concurrent.BlockingQueue
@@ -16,6 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.function.Function
 
 class TrackScheduler extends AudioEventAdapter {
+	private static final XLogger logger = XLoggerFactory.getXLogger(TrackScheduler.class)
 	private final AudioPlayer player
 	private BlockingQueue<AudioTrack> queue
 	private TextChannel textChannel
@@ -83,12 +85,14 @@ class TrackScheduler extends AudioEventAdapter {
 	 * Start the next track, stopping the current one if it is playing.
 	 */
 	void nextTrack() {
+		// Start the next track, regardless of if something is already playing or not. In case queue was empty, we are
+		// giving null to startTrack, which is a valid argument and will simply stop the player.
 		player.startTrack(queue.poll(), false)
 	}
 
 	void skip(int amount) {
 		(1..<amount).forEach({ _ -> queue.poll()})
-		player.stopTrack()
+		nextTrack()
 	}
 
 	void skipTime(int amount) {
@@ -191,17 +195,28 @@ class TrackScheduler extends AudioEventAdapter {
 		}
 
 		Function<String, String> getVideoImageID = (String videoUrl) -> {
-			String videoImageId = videoUrl.split("(?<=watch\\?v=)")[1]
-			videoUrl = String.format("https://img.youtube.com/vi/%s/sddefault.jpg", videoImageId)
+			try{
+				String videoImageId = videoUrl.split("(?<=watch\\?v=)")[1]
+				videoUrl = String.format("https://img.youtube.com/vi/%s/sddefault.jpg", videoImageId)
+			}
+			catch (Exception e){
+				logger.info("No VideoImage Found " + e)
+			}
+
 		}
 
-		String videoImgUrl = getVideoImageID(track.info.uri.toString())
 		EmbedBuilder eb = new EmbedBuilder()
-		eb.setTitle(track.info.title, track.info.uri) // large hyperlink
-		//eb.setAuthor(track.info.author)//, track.info.uri) // , videoImgUrl) image for author top left
-		//eb.setImage(videoImgUrl) // Bottom large image
-		eb.setThumbnail(videoImgUrl) // Top right corner image
-		eb.setDescription("By: ${track.info.author}")
+		try {
+			String videoImgUrl = getVideoImageID(track.info.uri)
+			eb.setTitle(track.info.title, track.info.uri) // large hyperlink
+			//eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
+			//eb.setImage(videoImgUrl) // Bottom large image
+			eb.setThumbnail(videoImgUrl) // Top right corner image
+		}
+		catch (Exception e) {
+			logger.info("Video Image was unable to be fetched: " + e)
+		}
+        eb.setDescription("By: ${track.info.author}")
 		eb.addField("Duration:", "${formatTime(Duration.ofMillis(player.playingTrack.position))}/${formatTime(Duration.ofMillis(track.info.length))}", false)
 		eb.setColor(0x5865F2) // blurple
 

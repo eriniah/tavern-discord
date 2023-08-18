@@ -7,6 +7,8 @@ import com.asm.tavern.domain.model.audio.SongService
 import com.asm.tavern.domain.model.command.*
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.slf4j.ext.XLogger
+import org.slf4j.ext.XLoggerFactory
 
 import javax.annotation.Nonnull
 import java.util.function.Function
@@ -14,6 +16,7 @@ import java.util.stream.Collectors
 import java.util.stream.StreamSupport
 
 class SongsCommandHandler implements CommandHandler {
+	private static final XLogger logger = XLoggerFactory.getXLogger(SongsCommandHandler.class)
 	private final SongService songService
 
 	SongsCommandHandler(SongService songService) {
@@ -41,15 +44,6 @@ class SongsCommandHandler implements CommandHandler {
 			builder.setLength(0)
 		}
 
-        //Only needs to be ran once on upgrade, then can be removed.
-		/**
-        for(song in songService.getSongRegistry().getAll()){
-            if(song.category == null)
-				// if song category is missing, reregister the song which will autofill category with uncategorized fixing nulls
-                songService.register(song.id, song.uri)
-        }
-	 	**/
-
 
 		StreamSupport.stream(songService.getSongRegistry().getAll().spliterator(), false)
 				.sorted(Comparator.comparing((Song song) -> song.id.id))
@@ -60,7 +54,14 @@ class SongsCommandHandler implements CommandHandler {
 					StringBuilder builder = new StringBuilder()
 					songs.forEach({ song ->
 						currentCategory = song.category
-						builder.append("[${song.id}](${DiscordUtils.escapeUrl(song.uri.toString())})\n")
+						try {
+							new URL(song.uri.toString())
+							builder.append("[${song.id}](${DiscordUtils.escapeUrl(song.uri.toString())})\n")
+						}
+						catch (Exception e) {
+							logger.info("File was most likely local: " + e)
+							builder.append("${song.id}\n")
+						}
 						if(++count == chunkSize){
 							pushMessage(builder)
 						}
