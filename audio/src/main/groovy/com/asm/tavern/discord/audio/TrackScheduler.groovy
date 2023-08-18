@@ -7,7 +7,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.dv8tion.jda.api.interactions.components.*
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import org.slf4j.ext.XLogger
 import org.slf4j.ext.XLoggerFactory
@@ -24,6 +23,7 @@ class TrackScheduler extends AudioEventAdapter {
 	private TextChannel textChannel
 	private final int maxRetryCount = 3
 	private int retryCount = 0
+	private ModeService modeService
 
 	/**
 	 * @param player The audio player this scheduler uses
@@ -48,9 +48,7 @@ class TrackScheduler extends AudioEventAdapter {
 	}
 
 	void playNext(AudioTrack track) {
-		// possibly this should just be an error that nothing is currently in the queue and play command should be used instead,
-		// but if nothing is in the queue and you attempt to playNext you probably just want the song to play right?
-		if (!player.startTrack(track, true)) {
+		if (!queue.empty) {
 			// add new song to queue position 0 ie: next
 			BlockingQueue<AudioTrack> modifiedQueue = new LinkedBlockingQueue<>()
 			List<AudioTrack> songList = queue.toList()
@@ -59,6 +57,28 @@ class TrackScheduler extends AudioEventAdapter {
 
 			this.queue = modifiedQueue
 		}
+		else {
+			queue(track)
+		}
+	}
+
+	void forceNext() {
+		if(modeService.mode != null && modeService.mode != ModeService.MODE.DEFAULT) {
+			switch (modeService.mode) {
+				case ModeService.MODE.CATEGORY:
+					if (queue.empty) {
+						AudioTrack modeTrack = modeService.getNext()
+						playNext(modeTrack.makeClone())
+					}
+					break
+				case ModeService.MODE.WEAVE:
+					AudioTrack weaveTrack = modeService.getNext()
+					if (weaveTrack.info.title != track.info.title)
+						playNext(weaveTrack.makeClone())
+					break
+			}
+		}
+		nextTrack()
 	}
 
 	/**
@@ -97,9 +117,9 @@ class TrackScheduler extends AudioEventAdapter {
 		player.setPaused(false)
 	}
 
-    boolean getIsPaused() {
-        player.paused
-    }
+	boolean getIsPaused() {
+		player.paused
+	}
 
 	void shuffle() {
 		// Shuffle and reconstruct the Queue
@@ -115,6 +135,10 @@ class TrackScheduler extends AudioEventAdapter {
 		this.textChannel = textChannel
 	}
 
+	void setModeService(ModeService modeService){
+		this.modeService = modeService
+	}
+
 	BlockingQueue<AudioTrack> getQueue() {
 		queue
 	}
@@ -124,9 +148,42 @@ class TrackScheduler extends AudioEventAdapter {
 	}
 
 	@Override
+	void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
+		player.startTrack(queue.poll(), true)
+	}
+
+	@Override
 	void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+		if(endReason == AudioTrackEndReason.LOAD_FAILED){
+
+			if(retryCount < 3) {
+				retryCount++
+				textChannel.sendMessage("Failure playing track: " + track.info.title + " attempting to retry. Attempt Number: " + retryCount).queue()
+				player.startTrack(track.makeClone(), false)
+			}
+			else {
+				textChannel.sendMessage("Failed to play track: " + track.info.title + " " + retryCount + " times, track will be skipped. Video may be unavailable."  + retryCount).queue()
+				retryCount = 0
+			}
+		}
+
 		// Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
-		if (endReason.mayStartNext) {
+		else if (endReason.mayStartNext || endReason == AudioTrackEndReason.STOPPED){
+			if(modeService.mode != null && modeService.mode != ModeService.MODE.DEFAULT) {
+				switch (modeService.mode) {
+					case ModeService.MODE.CATEGORY:
+						if (queue.empty) {
+							AudioTrack modeTrack = modeService.getNext()
+							playNext(modeTrack.makeClone())
+						}
+						break
+					case ModeService.MODE.WEAVE:
+						AudioTrack weaveTrack = modeService.getNext()
+						if (weaveTrack.info.title != track.info.title)
+							playNext(weaveTrack.makeClone())
+						break
+				}
+			}
 			nextTrack()
 		}
 	}
@@ -151,40 +208,40 @@ class TrackScheduler extends AudioEventAdapter {
 		EmbedBuilder eb = new EmbedBuilder()
 		try {
 			String videoImgUrl = getVideoImageID(track.info.uri)
-			//eb.setTitle(track.info.title, track.info.uri) // large hyperlink
-			eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
+			eb.setTitle(track.info.title, track.info.uri) // large hyperlink
+			//eb.setAuthor(track.info.author, track.info.uri) // , videoImgUrl) image for author top left
 			//eb.setImage(videoImgUrl) // Bottom large image
 			eb.setThumbnail(videoImgUrl) // Top right corner image
 		}
 		catch (Exception e) {
 			logger.info("Video Image was unable to be fetched: " + e)
 		}
-		eb.setDescription("Now Playing: ${track.info.title}")
+        eb.setDescription("By: ${track.info.author}")
 		eb.addField("Duration:", "${formatTime(Duration.ofMillis(player.playingTrack.position))}/${formatTime(Duration.ofMillis(track.info.length))}", false)
 		eb.setColor(0x5865F2) // blurple
 
 		textChannel.sendMessageEmbeds(eb.build())
-                .setActionRow(
-                        Button.primary("skip", "Skip"),
-						Button.primary("shuffle", "Shuffle"),
-						Button.primary("pause", "Play/Pause"),
-                )
-                .queue()
+			.setActionRow(
+				Button.primary("skip", "Skip"),
+				Button.primary("shuffle", "Shuffle"),
+				Button.primary("pause", "Play/Pause"),
+			)
+			.queue()
 	}
 
 	@Override
 	void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
 		// Retry X times.
-		if(retryCount < maxRetryCount)
-		{
-			retryCount++
-			textChannel.sendMessage("Failure playing track: " + track.info.title + " attempting to retry. Attempt Number: " + retryCount).queue()
-			player.startTrack(track.makeClone(), false)
-		}
-		else{
-			textChannel.sendMessage("Failed to play track: " + track.info.title + " " + retryCount + " times, track will be skipped. Video may be unavailable."  + retryCount).queue()
-			retryCount = 0
-		}
+//		if(retryCount < maxRetryCount)
+//		{
+//			retryCount++
+//			textChannel.sendMessage("Failure playing track: " + track.info.title + " attempting to retry. Attempt Number: " + retryCount).queue()
+//			player.startTrack(track.makeClone(), false)
+//		}
+//		else{
+//			textChannel.sendMessage("Failed to play track: " + track.info.title + " " + retryCount + " times, track will be skipped. Video may be unavailable."  + retryCount).queue()
+//			retryCount = 0
+//		}
 	}
 
 }
