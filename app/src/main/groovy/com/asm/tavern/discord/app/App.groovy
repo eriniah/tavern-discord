@@ -20,6 +20,7 @@ import com.asm.tavern.discord.repository.file.FileSongRepository
 import com.asm.tavern.domain.model.DomainRegistry
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.audio.AudioService
+import com.asm.tavern.discord.audio.ModeService
 import com.asm.tavern.domain.model.audio.SongRepository
 import com.asm.tavern.domain.model.audio.SongService
 import com.asm.tavern.domain.model.command.CommandHandlerRegistry
@@ -89,10 +90,23 @@ class App {
 		logger.info("Initializing application context")
 		GenericApplicationContext applicationContext = new GenericApplicationContext()
 		applicationContext.registerBean(RollService.class, RollService::new)
-		applicationContext.registerBean(AudioService.class, LavaPlayerAudioService::new)
-		applicationContext.registerBean(SongRepository.class, () -> new FileSongRepository(appConfig.getSongFile()))
-		applicationContext.registerBean(SpotifyService.class, () -> new SpotifyService(appConfig.getSpotifyClientId(), appConfig.getSpotifyClientSecret()))
-		applicationContext.registerBean(SongService.class, () -> new SongService(applicationContext.getBean(SongRepository.class), applicationContext.getBean(SpotifyService.class)))
+
+		applicationContext.registerBean(SongRepository.class, () -> new FileSongRepository(
+				appConfig.getSongFile()
+		))
+		applicationContext.registerBean(SongService.class, () -> new SongService(
+				applicationContext.getBean(SongRepository.class),
+				applicationContext.getBean(SpotifyService.class)
+		))
+		applicationContext.registerBean(AudioService.class, () -> new LavaPlayerAudioService(
+				applicationContext.getBean(ModeService.class)
+		))
+		applicationContext.registerBean(ModeService.class, () -> new ModeService(
+				applicationContext.getBean(SongRepository.class)
+		))
+		applicationContext.registerBean(SpotifyService.class, () -> new SpotifyService(
+				appConfig.getSpotifyClientId(), appConfig.getSpotifyClientSecret()
+		))
 		applicationContext.registerBean(ComradeService.class, LocalComradeService::new)
 		applicationContext.registerBean(DrinkRepository.class, LocalDrinkRepository::new)
 		applicationContext.registerBean(QuestService.class, LocalQuestService::new)
@@ -143,6 +157,8 @@ class App {
 			.add(new DrinksCommandHandler(drinkService))
 			.add(new ShuffleQueueCommandHandler(audioService))
 			.add(new PlayNextCommandHandler(songService, audioService))
+			.add(new WeaveSongCommandHandler(songService, audioService))
+			.add(new PlayModeCommandHandler(songService, audioService))
 
 		discord.start()
     }
