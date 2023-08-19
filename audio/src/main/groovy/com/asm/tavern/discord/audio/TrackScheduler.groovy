@@ -48,7 +48,7 @@ class TrackScheduler extends AudioEventAdapter {
 	}
 
 	void playNext(AudioTrack track) {
-		if (!queue.empty) {
+		if (!queue.empty || modeService.mode == ModeService.MODE.CATEGORY) {
 			// add new song to queue position 0 ie: next
 			BlockingQueue<AudioTrack> modifiedQueue = new LinkedBlockingQueue<>()
 			List<AudioTrack> songList = queue.toList()
@@ -57,7 +57,7 @@ class TrackScheduler extends AudioEventAdapter {
 
 			this.queue = modifiedQueue
 		}
-		else {
+		else{
 			queue(track)
 		}
 	}
@@ -179,8 +179,9 @@ class TrackScheduler extends AudioEventAdapter {
 						break
 					case ModeService.MODE.WEAVE:
 						AudioTrack weaveTrack = modeService.getNext()
-						if (weaveTrack.info.title != track.info.title)
+						if (weaveTrack.info.title != track.info.title){
 							playNext(weaveTrack.makeClone())
+						}
 						break
 				}
 			}
