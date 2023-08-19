@@ -53,11 +53,20 @@ class QueueCommandHandler implements CommandHandler {
 				StringBuilder builder = new StringBuilder()
 				tracks.forEach( {track ->
 						if(songIndex <= maxOutput){
-							builder.append("${songIndex++}. ")
-									.append(track.title)
-									.append(" - ")
-									.append(DiscordUtils.escapeUrl(track.url.toString()))
-									.append("\n")
+							try{
+								track.getUrl()
+								builder.append("${songIndex++}. ")
+										.append(track.title)
+										.append(" - ")
+										.append(DiscordUtils.escapeUrl(track.url.toString()))
+										.append("\n")
+							}
+							catch (Exception e){
+								builder.append("${songIndex++}. ")
+										.append(track.title)
+										.append("\n")
+							}
+
 						}
 					totalDuration += track.duration
 				})
