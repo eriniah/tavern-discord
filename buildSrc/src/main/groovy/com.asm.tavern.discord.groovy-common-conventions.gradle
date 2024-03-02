@@ -19,6 +19,10 @@ repositories {
     maven {
         url = 'https://m2.dv8tion.net/releases'
     }
+    maven {
+        name "arbjergDevSnapshots"
+        url "https://maven.lavalink.dev/snapshots"
+    }
 }
 
 dependencies {
