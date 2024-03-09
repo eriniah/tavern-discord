@@ -4,6 +4,6 @@ plugins {
 
 dependencies {
     implementation project(':utilities')
-    implementation 'org.json:json:20230227'
-    implementation 'dev.arbjerg:lavaplayer:2.0.0'
+    implementation 'org.json:json:20231013'
+    implementation "dev.arbjerg:lavaplayer:6d14c5b2d96fd953c671cfae8f9b9ea11aa20d5a-SNAPSHOT"
 }
