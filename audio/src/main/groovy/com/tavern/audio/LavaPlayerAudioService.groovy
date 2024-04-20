@@ -446,7 +446,7 @@ class LavaPlayerAudioService implements AudioService {
 	}
 
 	@Override
-	void forcePlay(TextChannel textChannel){
+	void forcePlay(TextChannel textChannel) {
 		GuildId guildId = new GuildId(textChannel.getGuild().getId())
 		GuildMusicManager musicManager = musicManagers.get(guildId)
 		musicManager.scheduler.setChannelId(textChannel)

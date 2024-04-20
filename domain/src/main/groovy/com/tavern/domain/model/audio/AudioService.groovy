@@ -1,8 +1,8 @@
 package com.tavern.domain.model.audio
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.tavern.domain.model.discord.GuildId
 import com.tavern.domain.model.discord.VoiceChannelId
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.GuildVoiceState
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel

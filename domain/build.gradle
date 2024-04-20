@@ -11,5 +11,5 @@ dependencies {
     // TODO: EMM Remove this dependency from domain
     implementation libs.lavaplayer
     // TODO: EMM Remove this dependency from domain
-    implementation libs.discordJda
+    // implementation libs.discordJda
 }
