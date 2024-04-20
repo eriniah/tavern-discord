@@ -260,6 +260,7 @@ class LavaPlayerAudioService implements AudioService {
 			@Override
 			void loadFailed(FriendlyException exception) {
 				textChannel.sendMessage("Could not play: ${exception.getMessage()}").queue()
+				logger.error "Failed to play track", exception
 			}
 		})
 	}

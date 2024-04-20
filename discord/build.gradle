@@ -1,8 +1,14 @@
 plugins {
-    id 'com.asm.tavern.discord.groovy-library-conventions'
+    id 'java-library'
+    id 'com.tavern.groovy-common-conventions'
 }
 
 dependencies {
     implementation project(':domain')
     implementation project(':utilities')
+
+    implementation libs.bundles.core
+    implementation libs.discordJda
+
+    testImplementation libs.bundles.spock
 }

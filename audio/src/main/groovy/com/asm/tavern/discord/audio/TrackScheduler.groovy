@@ -1,10 +1,13 @@
 package com.asm.tavern.discord.audio
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import kotlin.RequiresOptIn
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.components.buttons.Button
@@ -154,8 +157,7 @@ class TrackScheduler extends AudioEventAdapter {
 
 	@Override
 	void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-		if(endReason == AudioTrackEndReason.LOAD_FAILED){
-
+		if(endReason == AudioTrackEndReason.LOAD_FAILED) {
 			if(retryCount < 3) {
 				retryCount++
 				textChannel.sendMessage("Failure playing track: " + track.info.title + " attempting to retry. Attempt Number: " + retryCount).queue()
@@ -233,6 +235,7 @@ class TrackScheduler extends AudioEventAdapter {
 
 	@Override
 	void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+		logger.error("Exception when playing track " + track.info.title, exception)
 		// Retry X times.
 //		if(retryCount < maxRetryCount)
 //		{

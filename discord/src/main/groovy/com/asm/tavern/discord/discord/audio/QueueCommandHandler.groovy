@@ -1,6 +1,6 @@
 package com.asm.tavern.discord.discord.audio
 
-import com.asm.tavern.discord.utilities.DiscordUtils
+import com.asm.tavern.discord.discord.DiscordUtils
 import com.asm.tavern.discord.utilities.stream.StreamChunkCollector
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.audio.AudioService

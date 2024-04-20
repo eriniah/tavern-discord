@@ -1,6 +1,6 @@
 package com.asm.tavern.discord.discord.drinks
 
-import com.asm.tavern.discord.utilities.DiscordUtils
+import com.asm.tavern.discord.discord.DiscordUtils
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.Mention

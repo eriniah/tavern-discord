@@ -1,12 +1,11 @@
 package com.asm.tavern.discord.discord.drinks
 
-import com.asm.tavern.discord.utilities.DiscordUtils
+import com.asm.tavern.discord.discord.DiscordUtils
 import com.asm.tavern.domain.model.TavernCommands
 import com.asm.tavern.domain.model.command.*
 import com.asm.tavern.domain.model.discord.Mention
 import com.asm.tavern.domain.model.drinks.DrinkService
 import com.asm.tavern.domain.model.drinks.MemberDrinkResult
-import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
 import javax.annotation.Nonnull

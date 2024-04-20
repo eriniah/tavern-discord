@@ -1,4 +1,4 @@
-package com.asm.tavern.discord.utilities
+package com.asm.tavern.discord.discord
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel

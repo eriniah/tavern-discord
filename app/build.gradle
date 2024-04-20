@@ -3,8 +3,10 @@
  */
 
 plugins {
-    id 'com.asm.tavern.discord.groovy-application-conventions'
+    id 'java'
+    id 'application'
     id 'distribution'
+    id 'com.tavern.groovy-common-conventions'
 }
 
 mainClassName = 'com.asm.tavern.discord.app.App'
@@ -18,6 +20,8 @@ dependencies {
     implementation project(':audio')
     implementation project(':repository')
     implementation project(':drinks')
+
+    implementation libs.bundles.core
 }
 
 application {
@@ -35,34 +39,37 @@ distributions {
 }
 
 jar {
+    duplicatesStrategy DuplicatesStrategy.WARN
     manifest {
         attributes 'Main-Class': application.mainClass
     }
-    baseName 'tavern'
-    archiveName = "${baseName}.${jar.extension}"
+    archiveBaseName = 'tavern'
     dependsOn configurations.runtimeClasspath
     from {
         configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
-    new File(jar.destinationDir , "/Tavern-${version}").mkdir()
-    destinationDir = new File(jar.destinationDir , "/Tavern-${version}")
-
+    // TODO: EMM Refactor this directory stuff. Currently a mess
+    def originalDestDir = jar.destinationDirectory.getAsFile().get()
+    File newDestDir = new File("${jar.destinationDirectory.getAsFile().get()}/Tavern-${version}")
+    newDestDir.mkdir()
+    destinationDirectory = newDestDir
+    destinationDirectory = newDestDir
 }
 
 tasks.register("scriptDeploy", Copy) {
-    new File(jar.destinationDir, "/").mkdirs()
-    new File(jar.destinationDir , "/launchTavern.bat").text =
+    new File("${jar.destinationDirectory.getAsFile().get()}/").mkdirs()
+    new File("${jar.destinationDirectory.getAsFile().get()}/launchTavern.bat").text =
             "java -jar tavern.jar\n" +
                     "pause"
 
-    new File(jar.destinationDir, "/launchTavern.sh").text =
+    new File("${jar.destinationDirectory.getAsFile().get()}/launchTavern.sh").text =
             "#!/usr/bin/env bash\n" +
                     "java -jar tavern.jar\n"
 
     from("../")
     include("tavern-discord.properties")
     includeEmptyDirs = false
-    into(new File(jar.destinationDir , "/"))
+    into(new File("${jar.destinationDirectory.getAsFile().get()}/"))
 }
 
 tasks.named("build") { finalizedBy("scriptDeploy") }

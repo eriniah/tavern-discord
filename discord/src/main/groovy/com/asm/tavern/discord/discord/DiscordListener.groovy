@@ -62,10 +62,13 @@ class DiscordListener extends ListenerAdapter {
 	void onGuildVoiceUpdate(@Nonnull GuildVoiceUpdateEvent event) {
 		// Leave if everyone else leaves the chat
 		GuildId guildId = new GuildId(event.getGuild().getId())
-		VoiceChannelId voiceChannelId = new VoiceChannelId(event.getChannelLeft().getId())
-		if (event.getChannelLeft().members.size() == 1 && voiceChannelId == DomainRegistry.audioService().getCurrentChannel(guildId)) {
-			DomainRegistry.audioService().stop(guildId)
-			DomainRegistry.audioService().leave(event.getGuild())
+		var channel = event.getChannelLeft()
+		if (channel) {
+			VoiceChannelId voiceChannelId = new VoiceChannelId(channel.getId())
+			if (channel.members.size() == 1 && voiceChannelId == DomainRegistry.audioService().getCurrentChannel(guildId)) {
+				DomainRegistry.audioService().stop(guildId)
+				DomainRegistry.audioService().leave(event.getGuild())
+			}
 		}
 	}
 
