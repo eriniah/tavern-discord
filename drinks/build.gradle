@@ -1,8 +1,13 @@
 plugins {
-    id 'com.asm.tavern.discord.groovy-library-conventions'
+    id 'java-library'
+    id 'com.tavern.groovy-common-conventions'
 }
 
 dependencies {
     implementation project(':utilities')
     implementation project(':domain')
+
+    implementation libs.bundles.core
+    // TODO: EMM Remove this dependency from drinks
+    implementation libs.discordJda
 }

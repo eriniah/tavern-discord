@@ -1,0 +1,102 @@
+[versions]
+groovy = '3.0.21'
+
+spring = '5.3.34'
+google-guava = '33.1.0-jre'
+
+discordJda = '5.0.0-beta.22'
+# Snapshot version for most recent youtube API fix
+# lavaplayer = 'afec211f05c9dcf0b6ee44276a02f0316ea2458a-SNAPSHOT'
+lavaplayer = '0eaeee195f0315b2617587aa3537fa202df07ddc-SNAPSHOT'
+jackson = '2.12.7'
+
+slf4j = '2.0.7'
+log4j = '2.17.1'
+
+# Test
+spock = '2.0-M4-groovy-3.0'
+hamcrest = '2.2'
+byteBuddy = '1.10.10'
+objenesis = '3.1'
+
+[libraries]
+groovy = { module = 'org.codehaus.groovy:groovy', version.ref = 'groovy' }
+
+# Spring
+spring-core = { module = 'org.springframework:spring-core', version.ref = 'spring' }
+spring-context = { module = 'org.springframework:spring-context', version.ref = 'spring' }
+spring-beans = { module = 'org.springframework:spring-beans', version.ref = 'spring' }
+
+# Util
+google-guava = { module = 'com.google.guava:guava', version.ref = 'google-guava' }
+
+# Discord JDS API
+discordJda = { module = 'net.dv8tion:JDA', version.ref = 'discordJda' }
+
+# Lavaplayer for music streaming
+lavaplayer = { module = 'dev.arbjerg:lavaplayer', version.ref = 'lavaplayer' }
+
+# JSON
+jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core', version.ref = 'jackson' }
+jackson-databind = { module = 'com.fasterxml.jackson.core:jackson-databind', version.ref = 'jackson' }
+jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations', version.ref = 'jackson' }
+jackson-datatype-jdk8 = { module = 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8', version.ref = 'jackson' }
+
+# Logging
+slf4j-simple = { module = 'org.slf4j:slf4j-simple', version.ref = 'slf4j' }
+slf4j-api = { module = 'org.slf4j:slf4j-api', version.ref = 'slf4j' }
+slf4j-ext = { module = 'org.slf4j:slf4j-ext', version.ref = 'slf4j' }
+
+log4j-api = { module = 'org.apache.logging.log4j:log4j-api', version.ref = 'log4j' }
+log4j-core = { module = 'org.apache.logging.log4j:log4j-core', version.ref = 'log4j' }
+log4j-slf4j = { module = 'org.apache.logging.log4j:log4j-slf4j-impl', version.ref = 'log4j' }
+
+# === Testing
+# mandatory dependencies for using Spock
+spock-bom = { module = 'org.spockframework:spock-bom', version.ref = 'spock' }
+spock-core = { module = 'org.spockframework:spock-core', version.ref = 'spock' }
+spock-junit4 = { module = 'org.spockframework:spock-junit4', version.ref = 'spock' }
+
+# Optional dependencies for using Spock
+hamcrest = { module = 'org.hamcrest:hamcrest-core', version.ref = 'hamcrest' }
+byteBuddy = { module = 'net.bytebuddy:byte-buddy', version.ref = 'byteBuddy' }
+objenesis = { module = 'org.objenesis:objenesis', version.ref = 'objenesis' }
+
+
+[bundles]
+
+core = [
+    'groovy',
+    'spring-core',
+    'spring-beans',
+    'spring-context',
+    'google-guava',
+    'slf4j-api',
+    'slf4j-ext',
+    'slf4j-simple',
+]
+
+jackson = [
+    'jackson-core',
+    'jackson-annotations',
+    'jackson-databind',
+    'jackson-datatype-jdk8',
+]
+
+log4j = [
+    'log4j-api',
+    'log4j-core',
+    'log4j-slf4j',
+]
+
+spock = [
+    'spock-core',
+    'spock-junit4',
+    'hamcrest',
+    'byteBuddy',
+    'objenesis',
+]
+
+
+[plugins]
+
