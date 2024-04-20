@@ -29,8 +29,8 @@ class LocalDrinkService implements DrinkService {
 		Function<Member, MemberDrinkResult> drinkHandler = (Member m) -> isShot ? MemberDrinkResult.shot(m) : addDrinks(m, drinks)
 		if (comradeService.enabled) {
 			return members.stream()
-					.map(drinkHandler)
-					.collect(Collectors.toList())
+				.map(drinkHandler)
+				.collect(Collectors.toList())
 		} else {
 			return [drinkHandler.apply(member)]
 		}
@@ -41,10 +41,12 @@ class LocalDrinkService implements DrinkService {
 		if (random.nextInt(100) < 5) {
 			return members.stream().map({ member -> MemberDrinkResult.shot(member)}).collect(Collectors.toList())
 		} else if (comradeService.enabled) {
-			int roll = members.stream().map(_ -> random.nextInt(5)).reduce(0, (a, b) -> a > b ? a : b)
+			int roll = members.stream()
+				.map({ -> random.nextInt(5) })
+				.reduce(0, { (a, b) -> a > b ? a : b })
 			return members.stream()
-					.map({member -> addDrinks(member, roll)})
-					.collect(Collectors.toList())
+				.map({member -> addDrinks(member, roll)})
+				.collect(Collectors.toList())
 		} else {
 			return members.stream()
 					.map({member -> addDrinks(member, random.nextInt(5))})
