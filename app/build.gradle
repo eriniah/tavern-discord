@@ -7,7 +7,7 @@ plugins {
 }
 
 def appName = 'tavern'
-def mainClassName = 'com.asm.tavern.discord.app.App'
+def mainClassName = 'com.tavern.app.App'
 version = '1.0.0'
 description = 'Tavern discord integration'
 
