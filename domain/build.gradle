@@ -10,6 +10,7 @@ dependencies {
     implementation libs.bundles.core
     // TODO: EMM Remove this dependency from domain
     implementation libs.lavaplayer
+    implementation libs.v2
     // TODO: EMM Remove this dependency from domain
-    // implementation libs.discordJda
+    implementation libs.discordJda
 }

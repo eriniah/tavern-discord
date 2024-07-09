@@ -23,6 +23,10 @@ repositories {
         name "arbjergDevSnapshots"
         url "https://maven.lavalink.dev/snapshots"
     }
+    maven {
+        name "lavalinkDevReleases"
+        url "https://maven.lavalink.dev/releases"
+    }
 }
 
 test {
