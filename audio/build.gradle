@@ -9,6 +9,6 @@ dependencies {
 
     implementation libs.bundles.core
     implementation libs.lavaplayer
-    implementation libs.v2
+    implementation libs.lavaplayer.youtube
     implementation libs.discordJda
 }

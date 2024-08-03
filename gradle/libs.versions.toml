@@ -8,7 +8,7 @@ discordJda = '5.0.0-beta.22'
 # Snapshot version for most recent youtube API fix
 # lavaplayer = 'afec211f05c9dcf0b6ee44276a02f0316ea2458a-SNAPSHOT'
 lavaplayer = '2.2.1'
-v2 = '1.5.1'
+lavaplayer-youtube = '1.5.1'
 
 jackson = '2.12.7'
 
@@ -39,7 +39,7 @@ discordJda = { module = 'net.dv8tion:JDA', version.ref = 'discordJda' }
 lavaplayer = { module = 'dev.arbjerg:lavaplayer', version.ref = 'lavaplayer' }
 
 # lavalink youtube-source v2 rewritten source manager for lavaplayer
-v2 = { module = 'dev.lavalink.youtube:v2', version.ref = 'v2'}
+lavaplayer-youtube = { module = 'dev.lavalink.youtube:v2', version.ref = 'lavaplayer-youtube' }
 
 # JSON
 jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core', version.ref = 'jackson' }
