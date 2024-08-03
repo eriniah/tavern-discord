@@ -12,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import dev.lavalink.youtube.YoutubeAudioSourceManager
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.GuildVoiceState
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -24,12 +25,15 @@ import java.util.stream.Collectors
 class LavaPlayerAudioService implements AudioService {
 	private static final XLogger logger = XLoggerFactory.getXLogger(LavaPlayerAudioService.class)
 	private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager()
+	private final YoutubeAudioSourceManager ytSourceManager = new YoutubeAudioSourceManager()
 	private final Map<GuildId, GuildMusicManager> musicManagers = new HashMap<>()
 	private final YOUTUBE_SEARCH_PREFIX = "ytsearch:"
 	private final ModeService modeService
 
 	LavaPlayerAudioService(ModeService modeService) {
-		AudioSourceManagers.registerRemoteSources(playerManager)
+		playerManager.registerSourceManager(ytSourceManager);
+		AudioSourceManagers.registerRemoteSources(playerManager,
+				com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
 		AudioSourceManagers.registerLocalSource(playerManager)
 		this.modeService = modeService
 	}
