@@ -1,7 +1,5 @@
 package com.tavern.domain.model.command;
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,22 +67,22 @@ public class Command {
 		}
 
 		public Builder add(Command subCommand) {
-			this.subCommands = DefaultGroovyMethods.plus(this.subCommands, subCommand);
+			this.subCommands.add(subCommand);
 			return this;
 		}
 
 		public Builder add(Builder subCommand) {
-			this.subCommands = DefaultGroovyMethods.plus(this.subCommands, subCommand.build());
+			this.subCommands.add(subCommand.build());
 			return this;
 		}
 
 		public Builder add(CommandArgumentUsage commandArgumentUsage) {
-			this.argumentUsages = DefaultGroovyMethods.plus(this.argumentUsages, commandArgumentUsage);
+			this.argumentUsages.add(commandArgumentUsage);
 			return this;
 		}
 
 		public Builder add(CommandArgumentUsage.Builder commandArgumentUsage) {
-			this.argumentUsages = DefaultGroovyMethods.plus(this.argumentUsages, commandArgumentUsage.build());
+			this.argumentUsages.add(commandArgumentUsage.build());
 			return this;
 		}
 

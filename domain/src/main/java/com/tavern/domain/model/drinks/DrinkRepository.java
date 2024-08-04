@@ -6,4 +6,6 @@ public interface DrinkRepository {
 	int getDrinks(UserId id);
 
 	void addDrinks(UserId id, int drinks);
+
+	void clearDrinks();
 }

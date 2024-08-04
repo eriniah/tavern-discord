@@ -6,7 +6,6 @@ import com.tavern.domain.model.command.Command;
 import com.tavern.domain.model.command.CommandArgumentUsage;
 import com.tavern.domain.model.command.CommandMessage;
 import org.apache.commons.collections4.CollectionUtils;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class CommandParser {
 
 		// Get command and sub-commands
 		List<Command> commandList = locateCommand(commandMap, tokenizer);
-		if (!DefaultGroovyMethods.asBoolean(commandList)) {
+		if (CollectionUtils.isEmpty(commandList)) {
 			return commandNotFoundResult(message);
 		}
 

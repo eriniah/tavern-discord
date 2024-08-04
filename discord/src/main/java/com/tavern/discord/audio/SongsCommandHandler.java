@@ -88,6 +88,7 @@ public class SongsCommandHandler implements CommandHandler {
 						pushMessage.accept(builder);
 					}
 				}
+				pushMessage.accept(builder);
 			});
 
 		return new CommandResultBuilder().success().build();

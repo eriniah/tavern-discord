@@ -26,7 +26,6 @@ import com.tavern.drinks.LocalDrinkRepository;
 import com.tavern.drinks.LocalDrinkService;
 import com.tavern.drinks.LocalQuestService;
 import com.tavern.repository.file.FileSongRepository;
-import groovy.lang.Reference;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.context.support.GenericApplicationContext;
@@ -42,12 +41,12 @@ public class App {
 
 	public static void main(String[] args) throws Exception {
 		logger.info("Initializing Tavern");
-		final Reference<String> appConfigLocation = new Reference<String>("./tavern-discord.properties");
+		String appConfigLocation = "./tavern-discord.properties";
 		Properties properties = new Properties();
 
 		if (null != args && args.length == 1) {
-			appConfigLocation.set(args[0]);
-			properties.load(new FileInputStream(appConfigLocation.get()));
+			appConfigLocation = args[0];
+			properties.load(new FileInputStream(appConfigLocation));
 		} else if (1 < args.length) {
 			String discordToken = args[0];
 			String songFileLocation = args[1];
@@ -56,7 +55,7 @@ public class App {
 			String spotifyClientSecret = args.length > 5 ? "" : args[4];
 
 			try {
-				File tavernDiscordProperties = new File(appConfigLocation.get());
+				File tavernDiscordProperties = new File(appConfigLocation);
 				if (tavernDiscordProperties.createNewFile()) {
 					logger.debug("Tavern properties file created");
 				} else {
@@ -69,17 +68,17 @@ public class App {
 				properties.setProperty("spotifyClientId", spotifyClientId);
 				properties.setProperty("spotifyClientSecret", spotifyClientSecret);
 				properties.store(new FileOutputStream(tavernDiscordProperties), null);
-				properties.load(new FileInputStream(appConfigLocation.get()));
+				properties.load(new FileInputStream(appConfigLocation));
 			} catch (Exception ex) {
 				logger.error("There was an issue creating the tavern-discord.properties", ex);
 			}
 		} else {
-			properties.load(new FileInputStream(appConfigLocation.get()));
+			properties.load(new FileInputStream(appConfigLocation));
 		}
 
 		AppConfig appConfig = new AppConfig(properties);
-		logger.info("Reading configuration file at {}", appConfigLocation.get());
-		properties.load(new FileInputStream(appConfigLocation.get()));
+		logger.info("Reading configuration file at {}", appConfigLocation);
+		properties.load(new FileInputStream(appConfigLocation));
 
 		logger.info("Initializing Discord API");
 		CommandHandlerRegistry commandHandlerRegistry = new CommandHandlerRegistry();
@@ -88,7 +87,7 @@ public class App {
 		if (appConfig.getDiscordToken() == null || appConfig.getDiscordToken().isEmpty()) {
 			logger.info("DiscordToken is empty, please enter now:");
 			properties.setProperty("discordToken", new Scanner(System.in).next());
-			properties.store(new FileOutputStream(appConfigLocation.get()), null);
+			properties.store(new FileOutputStream(appConfigLocation), null);
 		}
 		Discord discord = new Discord(appConfig.getDiscordToken(), commandParser, commandHandlerRegistry);
 

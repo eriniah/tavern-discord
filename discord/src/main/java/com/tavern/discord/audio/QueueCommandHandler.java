@@ -54,7 +54,6 @@ public class QueueCommandHandler implements CommandHandler {
 				tracks.forEach(track -> {
 					if (songIndex.get() <= maxOutput) {
 						try {
-							songIndex.set(songIndex.get() + 1);
 							builder.append(songIndex.get())
 								.append(". ")
 								.append(track.getTitle())
@@ -62,12 +61,12 @@ public class QueueCommandHandler implements CommandHandler {
 								.append(DiscordUtils.escapeUrl(track.getUrl().toString()))
 								.append("\n");
 						} catch (Exception ex) {
-							songIndex.set(songIndex.get() + 1);
 							builder.append(songIndex.get())
 								.append(". ")
 								.append(track.getTitle())
 								.append("\n");
 						}
+						songIndex.set(songIndex.get() + 1);
 					}
 					totalDuration.set(totalDuration.get().plus(track.getDuration()));
 				});

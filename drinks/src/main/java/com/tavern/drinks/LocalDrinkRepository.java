@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LocalDrinkRepository implements DrinkRepository {
-	private final Map<UserId, Integer> playerDrinks = new HashMap<UserId, Integer>();
+	private final Map<UserId, Integer> playerDrinks = new HashMap<>();
 
 	@Override
 	public int getDrinks(UserId id) {
@@ -28,4 +28,9 @@ public class LocalDrinkRepository implements DrinkRepository {
 
 	}
 
+	@Override
+	public void clearDrinks() {
+		// TODO: EMM Make this repo store per-guild. Clear drink totals when tavern leaves the voice chat
+		playerDrinks.clear();
+	}
 }

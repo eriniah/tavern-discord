@@ -5,7 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import groovy.lang.IntRange;
+import kotlin.ranges.IntRange;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 public class TrackScheduler extends AudioEventAdapter {
 	private static final XLogger logger = XLoggerFactory.getXLogger(TrackScheduler.class);
@@ -98,7 +99,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 
 	public void skip(int amount) {
-		new IntRange(0, amount).forEach(__ -> queue.poll());
+		IntStream.range(1, amount).forEach(i -> queue.poll());
 		player.stopTrack();
 	}
 

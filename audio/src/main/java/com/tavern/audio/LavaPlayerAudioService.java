@@ -13,13 +13,14 @@ import com.tavern.domain.model.audio.AudioService;
 import com.tavern.domain.model.audio.AudioTrackInfo;
 import com.tavern.domain.model.discord.GuildId;
 import com.tavern.domain.model.discord.VoiceChannelId;
+import com.tavern.utilities.CollectionUtils;
 import com.tavern.utilities.Ref;
-import groovy.lang.Reference;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 public class LavaPlayerAudioService implements AudioService {
 	private static final XLogger logger = XLoggerFactory.getXLogger(LavaPlayerAudioService.class);
+	private static final Logger log = LoggerFactory.getLogger(LavaPlayerAudioService.class);
 
 	private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
 	private final dev.lavalink.youtube.YoutubeAudioSourceManager ytSourceManager = new dev.lavalink.youtube.YoutubeAudioSourceManager();
@@ -73,7 +75,7 @@ public class LavaPlayerAudioService implements AudioService {
 		playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
 			@Override
 			public void trackLoaded(final AudioTrack track) {
-				if (DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
+				if (null != getNowPlaying(guildId)) {
 					textChannel.sendMessage("Adding to queue " + track.getInfo().title).queue();
 				}
 
@@ -82,28 +84,30 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void playlistLoaded(final AudioPlaylist playlist) {
-				AudioTrack firstTrack = playlist.getSelectedTrack();
+				AudioTrack firstTrack = Optional.ofNullable(playlist.getSelectedTrack())
+					.orElseGet(() -> CollectionUtils.first(playlist.getTracks()).orElse(null));
 
 				if (firstTrack == null) {
-					firstTrack = DefaultGroovyMethods.first(playlist.getTracks());
+					logger.error("Schedule playlist but there were no tracks");
+					return;
 				}
 
-				final Reference<Integer> currentIndex = new Reference<>(playlist.getTracks().indexOf(firstTrack));
-				if (currentIndex.get() == -1) {
+				int currentIndex = playlist.getTracks().indexOf(firstTrack);
+				if (currentIndex == -1) {
 					logger.warn("Could not find track index, starting from the top");
-					currentIndex.set(0);
+					currentIndex = 0;
 				}
 
-				for (int i = currentIndex.get(); i < playlist.getTracks().size(); i++) {
+				for (int i = currentIndex; i < playlist.getTracks().size(); i++) {
 					scheduleTrack(musicManager, playlist.getTracks().get(i));
 				}
 
-				textChannel.sendMessage("Adding playlist " + playlist.getName() + " to queue. Starting with the track " + playlist.getTracks().get(currentIndex.get()).getInfo().title).queue();
+				textChannel.sendMessage("Adding playlist " + playlist.getName() + " to queue. Starting with the track " + playlist.getTracks().get(currentIndex).getInfo().title).queue();
 			}
 
 			@Override
 			public void noMatches() {
-				textChannel.sendMessage("Nothing found by " + String.valueOf(uri));
+				textChannel.sendMessage("Nothing found by " + uri);
 			}
 
 			@Override
@@ -124,7 +128,7 @@ public class LavaPlayerAudioService implements AudioService {
 		playerManager.loadItemOrdered(musicManager, YOUTUBE_SEARCH_PREFIX + searchString, new AudioLoadResultHandler() {
 			@Override
 			public void trackLoaded(final AudioTrack track) {
-				if (DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
+				if (null != getNowPlaying(guildId)) {
 					textChannel.sendMessage("Adding to queue " + track.getInfo().title).queue();
 				}
 
@@ -133,17 +137,19 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void playlistLoaded(AudioPlaylist playlist) {
-				final Reference<AudioTrack> firstTrack = new Reference<AudioTrack>(playlist.getSelectedTrack());
+				AudioTrack firstTrack = Optional.ofNullable(playlist.getSelectedTrack())
+					.orElseGet(() -> CollectionUtils.first(playlist.getTracks()).orElse(null));
 
-				if (firstTrack.get() == null) {
-					firstTrack.set(DefaultGroovyMethods.first(playlist.getTracks()));
+				if (firstTrack == null) {
+					logger.error("Added playlist but there were no tracks");
+					return;
 				}
 
-				if (DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
-					textChannel.sendMessage("Adding to queue " + firstTrack.get().getInfo().title).queue();
+				if (null != getNowPlaying(guildId)) {
+					textChannel.sendMessage("Adding to queue " + firstTrack.getInfo().title).queue();
 				}
 
-				scheduleTrack(musicManager, firstTrack.get());
+				scheduleTrack(musicManager, firstTrack);
 			}
 
 			@Override
@@ -169,7 +175,7 @@ public class LavaPlayerAudioService implements AudioService {
 		playerManager.loadItemOrdered(musicManager, uri.toString(), new AudioLoadResultHandler() {
 			@Override
 			public void trackLoaded(final AudioTrack track) {
-				if (!DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
+				if (null == getNowPlaying(guildId)) {
 					musicManagers.get(guildId).getScheduler().playNext(track);
 				} else {
 					textChannel.sendMessage("Adding " + track.getInfo().title + " to queue after currently playing song.").queue();
@@ -179,26 +185,27 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void playlistLoaded(final AudioPlaylist playlist) {
-				AudioTrack firstTrack = playlist.getSelectedTrack();
+				AudioTrack firstTrack = Optional.ofNullable(playlist.getSelectedTrack())
+					.orElseGet(() -> CollectionUtils.first(playlist.getTracks()).orElse(null));
 
 				if (firstTrack == null) {
-					firstTrack = DefaultGroovyMethods.first(playlist.getTracks());
+					logger.warn("Added playlist but there were no tracks");
 				}
 
-				final Reference<Integer> currentIndex = new Reference<>(playlist.getTracks().indexOf(firstTrack));
-				if (currentIndex.get() == -1) {
+				int currentIndex = playlist.getTracks().indexOf(firstTrack);
+				if (currentIndex == -1) {
 					logger.warn("Could not find track index, starting from the top");
-					currentIndex.set(0);
+					currentIndex = 0;
 				}
 
 				// if nothing in queue, we just add the playlist normally else we add it in reverse order to the position this maintains playlist order while placing in queue at correct position
 
-				if (!DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
-					for (int i = currentIndex.get(); i < playlist.getTracks().size(); i++) {
+				if (null == getNowPlaying(guildId)) {
+					for (int i = currentIndex; i < playlist.getTracks().size(); i++) {
 						scheduleTrack(musicManager, playlist.getTracks().get(i));
 					}
 
-					textChannel.sendMessage("Adding playlist " + playlist.getName() + " to queue. Starting with the track " + playlist.getTracks().get(currentIndex.get()).getInfo().title).queue();
+					textChannel.sendMessage("Adding playlist " + playlist.getName() + " to queue. Starting with the track " + playlist.getTracks().get(currentIndex).getInfo().title).queue();
 				} else {
 					// Modified from play command, if adding a playlist to play next we would want to reverse order the list when sending it to queue
 					// This is because adding a playlist one song at a time to a specific position would reverse order.
@@ -208,7 +215,7 @@ public class LavaPlayerAudioService implements AudioService {
 						musicManagers.get(guildId).getScheduler().playNext(playlist.getTracks().get(i - 1));
 					}
 
-					textChannel.sendMessage("Adding playlist " + playlist.getName() + " to queue after currently playing song. Starting with the track " + playlist.getTracks().get(currentIndex.get()).getInfo().title).queue();
+					textChannel.sendMessage("Adding playlist " + playlist.getName() + " to queue after currently playing song. Starting with the track " + playlist.getTracks().get(currentIndex).getInfo().title).queue();
 				}
 			}
 
@@ -234,7 +241,7 @@ public class LavaPlayerAudioService implements AudioService {
 		playerManager.loadItemOrdered(musicManager, YOUTUBE_SEARCH_PREFIX + searchString, new AudioLoadResultHandler() {
 			@Override
 			public void trackLoaded(final AudioTrack track) {
-				if (!DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
+				if (null == getNowPlaying(guildId)) {
 					scheduleTrack(musicManager, track);
 				} else {
 					textChannel.sendMessage("Adding " + track.getInfo().title + " to queue after currently playing song.").queue();
@@ -244,23 +251,25 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void playlistLoaded(AudioPlaylist playlist) {
-				final Reference<AudioTrack> firstTrack = new Reference<AudioTrack>(playlist.getSelectedTrack());
+				final AudioTrack firstTrack = Optional.ofNullable(playlist.getSelectedTrack())
+					.orElseGet(() -> CollectionUtils.first(playlist.getTracks()).orElse(null));
 
-				if (firstTrack.get() == null) {
-					firstTrack.set(DefaultGroovyMethods.first(playlist.getTracks()));
+				if (firstTrack == null) {
+					logger.error("Added playlist but there were no tracks");
+					return;
 				}
 
-				if (!DefaultGroovyMethods.asBoolean(getNowPlaying(guildId))) {
-					scheduleTrack(musicManager, DefaultGroovyMethods.first(playlist.getTracks()));
+				if (null == getNowPlaying(guildId)) {
+					scheduleTrack(musicManager, CollectionUtils.first(playlist.getTracks()).orElse(null));
 				} else {
-					scheduleTrackNext(musicManager, DefaultGroovyMethods.first(playlist.getTracks()));
-					textChannel.sendMessage("Adding " + firstTrack.get().getInfo().title + " to queue after currently playing song.").queue();
+					scheduleTrackNext(musicManager, CollectionUtils.first(playlist.getTracks()).orElse(null));
+					textChannel.sendMessage("Adding " + firstTrack.getInfo().title + " to queue after currently playing song.").queue();
 				}
 			}
 
 			@Override
 			public void noMatches() {
-				textChannel.sendMessage("Nothing found by " + searchString);
+				textChannel.sendMessage("Nothing found by " + searchString).queue();
 			}
 
 			@Override
@@ -424,7 +433,7 @@ public class LavaPlayerAudioService implements AudioService {
 					trackRef.set(playlist.getSelectedTrack());
 
 					if (trackRef.get() == null) {
-						trackRef.set(DefaultGroovyMethods.first(playlist.getTracks()));
+						trackRef.set(CollectionUtils.first(playlist.getTracks()).orElse(null));
 					}
 				}
 

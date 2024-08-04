@@ -4,7 +4,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.tavern.domain.model.audio.AudioService;
 import com.tavern.domain.model.audio.Song;
 import com.tavern.domain.model.audio.SongRepository;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import com.tavern.utilities.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
@@ -73,10 +73,10 @@ public class ModeService {
         switch (mode) {
             case CATEGORY: {
                 try {
-                    return audioService.getAudioTrack(DefaultGroovyMethods.pop(categoryQueue).getUri());
+                    return audioService.getAudioTrack(CollectionUtils.pop(categoryQueue).getUri());
                 } catch (NoSuchElementException e) {
                     refreshCategoryQueue();
-                    return audioService.getAudioTrack(DefaultGroovyMethods.pop(categoryQueue).getUri());
+                    return audioService.getAudioTrack(CollectionUtils.pop(categoryQueue).getUri());
                 }
             }
             case WEAVE:
