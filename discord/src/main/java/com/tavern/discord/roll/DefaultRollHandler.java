@@ -20,12 +20,12 @@ public class DefaultRollHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getROLL();
+		return TavernCommands.ROLL;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.RollUsages.getDEFAULT().equals(usage);
+		return TavernCommands.RollUsages.DEFAULT.equals(usage);
 	}
 
 	@Override

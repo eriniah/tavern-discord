@@ -20,7 +20,7 @@ public class PopPopCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getPOPPOP();
+		return TavernCommands.POPPOP;
 	}
 
 	@Override

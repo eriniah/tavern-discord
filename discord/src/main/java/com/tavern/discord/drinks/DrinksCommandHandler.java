@@ -25,7 +25,7 @@ public class DrinksCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getDRINKS();
+		return TavernCommands.DRINKS;
 	}
 
 	@Override

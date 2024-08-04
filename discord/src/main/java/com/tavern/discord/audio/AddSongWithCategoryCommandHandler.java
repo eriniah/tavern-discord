@@ -23,12 +23,12 @@ public class AddSongWithCategoryCommandHandler implements CommandHandler {
 
     @Override
     public Command getCommand() {
-        return TavernCommands.getSONGS();
+        return TavernCommands.SONGS;
     }
 
     @Override
     public boolean supportsUsage(CommandArgumentUsage usage) {
-        return TavernCommands.SongsUsages.getADD_WITH_CATEGORY().equals(usage);
+        return TavernCommands.SongsUsages.ADD_WITH_CATEGORY.equals(usage);
     }
 
     @Override

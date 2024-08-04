@@ -27,7 +27,7 @@ public class QueueCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getQUEUE();
+		return TavernCommands.QUEUE;
 	}
 
 	@Override

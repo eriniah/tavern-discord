@@ -17,7 +17,7 @@ public class ClearCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getCLEAR();
+		return TavernCommands.CLEAR;
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class PauseCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getPAUSE();
+		return TavernCommands.PAUSE;
 	}
 
 	@Override

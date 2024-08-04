@@ -99,17 +99,17 @@ public class App {
 		SongRepository songRepository = new FileSongRepository(appConfig.getSongFile());
 
 		applicationContext.registerBean(SongRepository.class, () -> songRepository);
-		applicationContext.registerBean(SongService.class, new SongService(
+		applicationContext.registerBean(SongService.class, () -> new SongService(
 			applicationContext.getBean(SongRepository.class),
 			applicationContext.getBean(SpotifyService.class)
 		));
-		applicationContext.registerBean(AudioService.class, new LavaPlayerAudioService(
+		applicationContext.registerBean(AudioService.class, () -> new LavaPlayerAudioService(
 			applicationContext.getBean(ModeService.class)
 		));
-		applicationContext.registerBean(ModeService.class, new ModeService(
+		applicationContext.registerBean(ModeService.class, () -> new ModeService(
 			applicationContext.getBean(SongRepository.class)
 		));
-		applicationContext.registerBean(SpotifyService.class, new SpotifyService(
+		applicationContext.registerBean(SpotifyService.class, () -> new SpotifyService(
 			appConfig.getSpotifyClientId(),
 			appConfig.getSpotifyClientSecret()
 		));

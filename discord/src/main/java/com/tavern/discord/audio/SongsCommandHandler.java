@@ -29,12 +29,12 @@ public class SongsCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getSONGS();
+		return TavernCommands.SONGS;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.SongsUsages.getDEFAULT().equals(usage);
+		return TavernCommands.SongsUsages.DEFAULT.equals(usage);
 	}
 
 	@Override

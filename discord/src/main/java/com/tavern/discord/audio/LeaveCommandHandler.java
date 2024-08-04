@@ -16,7 +16,7 @@ public class LeaveCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getLEAVE();
+		return TavernCommands.LEAVE;
 	}
 
 	@Override

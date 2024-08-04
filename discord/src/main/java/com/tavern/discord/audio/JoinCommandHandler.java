@@ -16,7 +16,7 @@ public class JoinCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getJOIN();
+		return TavernCommands.JOIN;
 	}
 
 	@Override

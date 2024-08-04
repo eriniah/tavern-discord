@@ -22,12 +22,12 @@ public class AmountXSidesHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getROLL();
+		return TavernCommands.ROLL;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.RollUsages.getAMOUNT_X_SIDES().equals(usage);
+		return TavernCommands.RollUsages.AMOUNT_X_SIDES.equals(usage);
 	}
 
 	@Override

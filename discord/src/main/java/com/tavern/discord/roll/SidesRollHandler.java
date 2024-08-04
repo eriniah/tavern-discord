@@ -17,12 +17,12 @@ public class SidesRollHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getROLL();
+		return TavernCommands.ROLL;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.RollUsages.getSIDES().equals(usage);
+		return TavernCommands.RollUsages.SIDES.equals(usage);
 	}
 
 	@Override
@@ -33,10 +33,10 @@ public class SidesRollHandler implements CommandHandler {
 			event.getChannel().sendMessage("You rolled a " + roll).queue();
 			return new CommandResultBuilder().success().build();
 		} catch (NumberFormatException ex) {
-			event.getChannel().sendMessage("Arguments must be numbers");
+			event.getChannel().sendMessage("Arguments must be numbers").queue();
 			return new CommandResultBuilder().error().build();
 		} catch (IllegalArgumentException ex) {
-			event.getChannel().sendMessage(ex.getMessage());
+			event.getChannel().sendMessage(ex.getMessage()).queue();
 			return new CommandResultBuilder().error().build();
 		}
 	}

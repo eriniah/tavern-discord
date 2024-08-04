@@ -21,12 +21,12 @@ public class CommandHelpHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getHELP();
+		return TavernCommands.HELP;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.HelpUsages.getCOMMAND_HELP().equals(usage);
+		return TavernCommands.HelpUsages.COMMAND_HELP.equals(usage);
 	}
 
 	@Override

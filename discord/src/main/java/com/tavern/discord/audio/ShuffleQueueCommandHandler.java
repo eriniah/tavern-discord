@@ -17,7 +17,7 @@ public class ShuffleQueueCommandHandler implements CommandHandler {
 
     @Override
     public Command getCommand() {
-        return TavernCommands.getSHUFFLE();
+        return TavernCommands.SHUFFLE;
     }
 
     @Override

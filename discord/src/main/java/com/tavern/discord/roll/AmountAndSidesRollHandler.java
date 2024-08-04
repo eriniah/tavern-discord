@@ -23,12 +23,12 @@ public class AmountAndSidesRollHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getROLL();
+		return TavernCommands.ROLL;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.RollUsages.getAMOUNT_AND_SIDES().equals(usage);
+		return TavernCommands.RollUsages.AMOUNT_AND_SIDES.equals(usage);
 	}
 
 	@Override
@@ -49,10 +49,10 @@ public class AmountAndSidesRollHandler implements CommandHandler {
 			);
 			return new CommandResultBuilder().success().build();
 		} catch (NumberFormatException ex) {
-			event.getChannel().sendMessage("Arguments must be numbers");
+			event.getChannel().sendMessage("Arguments must be numbers").queue();
 			return new CommandResultBuilder().error().build();
 		} catch (IllegalArgumentException ex) {
-			event.getChannel().sendMessage(ex.getMessage());
+			event.getChannel().sendMessage(ex.getMessage()).queue();
 			return new CommandResultBuilder().error().build();
 		}
 	}

@@ -18,7 +18,7 @@ public class SkipCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getSKIP();
+		return TavernCommands.SKIP;
 	}
 
 	@Override

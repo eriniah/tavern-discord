@@ -17,12 +17,12 @@ public class RemoveSongCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getSONGS();
+		return TavernCommands.SONGS;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.SongsUsages.getREMOVE().equals(usage);
+		return TavernCommands.SongsUsages.REMOVE.equals(usage);
 	}
 
 	@Override

@@ -18,7 +18,7 @@ public class SkipTimeCommandHandler implements CommandHandler {
 
     @Override
     public Command getCommand() {
-        return TavernCommands.getSKIP_TIME();
+        return TavernCommands.SKIP_TIME;
     }
 
     @Override

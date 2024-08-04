@@ -17,7 +17,7 @@ public class UnpauseCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getUNPAUSE();
+		return TavernCommands.UNPAUSE;
 	}
 
 	@Override

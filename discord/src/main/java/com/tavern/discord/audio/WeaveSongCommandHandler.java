@@ -23,7 +23,7 @@ public class WeaveSongCommandHandler implements CommandHandler {
 
     @Override
     public Command getCommand() {
-        return TavernCommands.getWEAVE();
+        return TavernCommands.WEAVE;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class WeaveSongCommandHandler implements CommandHandler {
         } else {
             final String songId = Iterables.getFirst(message.getArgs(), null);
             //Check for spotify link here so we can play multiple times for a playlist from spotify
-            if (songId.contains(spotifyService.getURI_CHECK_STRING())) {
+            if (songId.contains(spotifyService.URI_CHECK_STRING)) {
                 spotifyService.getListOfSongsFromURL(songId).ifPresentOrElse(songlist -> {
                     audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager());
                     songlist.stream().findFirst().ifPresent(song -> audioService.setWeaveAudio(song.getId().toString()));

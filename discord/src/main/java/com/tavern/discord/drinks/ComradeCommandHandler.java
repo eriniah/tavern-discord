@@ -23,7 +23,7 @@ public class ComradeCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getCOMRADE();
+		return TavernCommands.COMRADE;
 	}
 
 	@Override

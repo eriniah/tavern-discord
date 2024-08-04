@@ -23,7 +23,7 @@ public class PlayNextCommandHandler implements CommandHandler {
 
     @Override
     public Command getCommand() {
-        return TavernCommands.getPLAY_NEXT();
+        return TavernCommands.PLAY_NEXT;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class PlayNextCommandHandler implements CommandHandler {
         final String songId = Iterables.getFirst(message.getArgs(), null);
 
         //Check for spotify link here so we can play multiple times for a playlist from spotify
-        if (songId.contains(spotifyService.getURI_CHECK_STRING())){
+        if (songId.contains(spotifyService.URI_CHECK_STRING)){
             spotifyService.getListOfSongsFromURL(songId).ifPresentOrElse( songList -> {
                 audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager());
                 songList.stream()

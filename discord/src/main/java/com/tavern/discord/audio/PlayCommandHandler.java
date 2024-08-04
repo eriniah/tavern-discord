@@ -23,7 +23,7 @@ public class PlayCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getPLAY();
+		return TavernCommands.PLAY;
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class PlayCommandHandler implements CommandHandler {
 	public CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
 		final String songId = Iterables.getFirst(message.getArgs(), null);
 
-		if (songId.contains(spotifyService.getURI_CHECK_STRING())) {
+		if (songId.contains(spotifyService.URI_CHECK_STRING)) {
 			spotifyService.getListOfSongsFromURL(songId).ifPresentOrElse(songList -> {
 				audioService.join(event.getMember().getVoiceState(), event.getGuild().getAudioManager());
 				songList.forEach(song -> audioService.play(event.getChannel().asTextChannel(), song.getId().toString()));

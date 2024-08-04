@@ -26,7 +26,7 @@ public class PlayModeCommandHandler implements CommandHandler {
 
     @Override
     public Command getCommand() {
-        return TavernCommands.getPLAY_MODE();
+        return TavernCommands.PLAY_MODE;
     }
 
     @Override

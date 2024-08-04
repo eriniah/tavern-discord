@@ -17,7 +17,7 @@ public class StopCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getSTOP();
+		return TavernCommands.STOP;
 	}
 
 	@Override

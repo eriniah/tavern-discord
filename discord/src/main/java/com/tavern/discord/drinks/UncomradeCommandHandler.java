@@ -16,7 +16,7 @@ public class UncomradeCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getUNCOMRADE();
+		return TavernCommands.UNCOMRADE;
 	}
 
 	@Override

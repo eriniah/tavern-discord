@@ -9,12 +9,12 @@ import javax.annotation.Nonnull;
 public class RollTideHandler implements CommandHandler {
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getROLL();
+		return TavernCommands.ROLL;
 	}
 
 	@Override
 	public boolean supportsUsage(CommandArgumentUsage usage) {
-		return TavernCommands.RollUsages.getROLL_TIDE().equals(usage);
+		return TavernCommands.RollUsages.ROLL_TIDE.equals(usage);
 	}
 
 	@Override

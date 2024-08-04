@@ -26,7 +26,7 @@ public class NowPlayingCommandHandler implements CommandHandler {
 
 	@Override
 	public Command getCommand() {
-		return TavernCommands.getNOW_PLAYING();
+		return TavernCommands.NOW_PLAYING;
 	}
 
 	@Override
