@@ -29,7 +29,7 @@ public class ShuffleQueueCommandHandler implements CommandHandler {
     public CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
         audioService.shuffle(new GuildId(event.getGuild().getId()));
         event.getChannel().sendMessage("Shuffled the queue!").queue();
-        return null;
+        return new CommandResultBuilder().success().build();
     }
 
 }

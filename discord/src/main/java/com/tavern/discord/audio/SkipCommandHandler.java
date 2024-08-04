@@ -4,6 +4,7 @@ import com.tavern.domain.model.TavernCommands;
 import com.tavern.domain.model.audio.AudioService;
 import com.tavern.domain.model.command.*;
 import com.tavern.domain.model.discord.GuildId;
+import com.tavern.utilities.CollectionUtils;
 import com.tavern.utilities.StringUtils;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -28,7 +29,10 @@ public class SkipCommandHandler implements CommandHandler {
 
 	@Override
 	public CommandResult handle(@Nonnull MessageReceivedEvent event, CommandMessage message) {
-		final int skipAmount = StringUtils.isNullOrBlank(message.getArgs().get(0)) ? 1 : Integer.parseInt(message.getArgs().get(0));
+		final int skipAmount = CollectionUtils.first(message.getArgs())
+			.filter(StringUtils::isNullOrBlank)
+			.map(Integer::parseInt)
+			.orElse(1);
 		GuildId guildId = new GuildId(event.getGuild().getId());
 		final String title = audioService.getNowPlaying(guildId) != null ? audioService.getNowPlaying(guildId).getInfo().getTitle() : "";
 		if (!title.isEmpty() && skipAmount == 1) {

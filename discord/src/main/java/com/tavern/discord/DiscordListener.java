@@ -63,7 +63,7 @@ public class DiscordListener extends ListenerAdapter {
 			if (null == handler) {
 				logger.warn("No handler for command {} with usage {}", Iterables.getLast(result.getCommandList()).getName(), result.getUsage().getName());
 			} else {
-				if (handler.handle(event, result).success()) {
+				if (!handler.handle(event, result).success()) {
 					logger.error("Failed to handle command {}{}", getParser().getPrefix(), result.getCommandString());
 				}
 			}

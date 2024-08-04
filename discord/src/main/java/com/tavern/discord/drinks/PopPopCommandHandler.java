@@ -3,6 +3,7 @@ package com.tavern.discord.drinks;
 import com.tavern.discord.DiscordUtils;
 import com.tavern.domain.model.TavernCommands;
 import com.tavern.domain.model.command.*;
+import com.tavern.domain.model.discord.Mention;
 import com.tavern.domain.model.drinks.DrinkService;
 import com.tavern.domain.model.drinks.MemberDrinkResult;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -36,7 +37,7 @@ public class PopPopCommandHandler implements CommandHandler {
 				if (results.get(0).getShot()) {
 					event.getChannel().sendMessage("Pop Pop!\nSucks to suck. Everyone take a shot!").queue();
 				} else {
-					event.getChannel().sendMessage("Pop Pop!\n" + results.stream().map(result -> "${new Mention(result.member.id)} take ${result.drinks} drinks!").collect(Collectors.joining("\n"))).queue();
+					event.getChannel().sendMessage("Pop Pop!\n" + results.stream().map(result -> String.format("%s take %s drinks!", new Mention(result.getMember()), result.getDrinks())).collect(Collectors.joining("\n"))).queue();
 				}
 				return new CommandResultBuilder().success().build();
 			}).orElseGet(() -> {
