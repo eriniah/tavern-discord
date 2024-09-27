@@ -5,8 +5,8 @@ google-guava = '33.1.0-jre'
 discordJda = '5.0.0-beta.22'
 # Snapshot version for most recent youtube API fix
 # lavaplayer = 'afec211f05c9dcf0b6ee44276a02f0316ea2458a-SNAPSHOT'
-lavaplayer = '2.2.1'
-lavaplayer-youtube = '1.5.1'
+lavaplayer = '2.2.2'
+lavaplayer-youtube = '1.8.3'
 
 jackson = '2.12.7'
 
