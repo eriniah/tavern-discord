@@ -4,7 +4,6 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -15,6 +14,7 @@ import com.tavern.domain.model.discord.GuildId;
 import com.tavern.domain.model.discord.VoiceChannelId;
 import com.tavern.utilities.CollectionUtils;
 import com.tavern.utilities.Ref;
+import dev.lavalink.youtube.YoutubeAudioSourceManager;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -25,7 +25,10 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class LavaPlayerAudioService implements AudioService {
@@ -33,14 +36,15 @@ public class LavaPlayerAudioService implements AudioService {
 	private static final Logger log = LoggerFactory.getLogger(LavaPlayerAudioService.class);
 
 	private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
-	private final dev.lavalink.youtube.YoutubeAudioSourceManager ytSourceManager = new dev.lavalink.youtube.YoutubeAudioSourceManager();
+	private final YoutubeAudioSourceManager ytSourceManager;
 	private final Map<GuildId, GuildMusicManager> musicManagers = new HashMap<GuildId, GuildMusicManager>();
 	private final String YOUTUBE_SEARCH_PREFIX = "ytsearch:";
 	private final ModeService modeService;
 
 	public LavaPlayerAudioService(ModeService modeService) {
+		this.ytSourceManager = new YoutubeAudioSourceManager();
+		this.ytSourceManager.useOauth2(null, false);
 		playerManager.registerSourceManager(ytSourceManager);
-		// TODO: EMM Is this still needed?
 		AudioSourceManagers.registerRemoteSources(playerManager, YoutubeAudioSourceManager.class);
 		AudioSourceManagers.registerLocalSource(playerManager);
 		this.modeService = modeService;
@@ -107,7 +111,7 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void noMatches() {
-				textChannel.sendMessage("Nothing found by " + uri);
+				textChannel.sendMessage("Nothing found by " + uri).queue();
 			}
 
 			@Override
@@ -154,7 +158,7 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void noMatches() {
-				textChannel.sendMessage("Nothing found by " + searchString);
+				textChannel.sendMessage("Nothing found by " + searchString).queue();
 			}
 
 			@Override
@@ -221,7 +225,7 @@ public class LavaPlayerAudioService implements AudioService {
 
 			@Override
 			public void noMatches() {
-				textChannel.sendMessage("Nothing found by " + uri);
+				textChannel.sendMessage("Nothing found by " + uri).queue();
 			}
 
 			@Override
