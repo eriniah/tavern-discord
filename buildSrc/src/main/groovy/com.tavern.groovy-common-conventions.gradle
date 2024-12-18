@@ -1,10 +1,8 @@
 /*
  * Common Plugin for all modules
  */
-
 plugins {
-    // Apply the groovy Plugin to add support for Groovy.
-    id 'groovy'
+
 }
 
 repositories {
@@ -14,14 +12,7 @@ repositories {
     // Has to add the below for lavaplayer fork
     mavenLocal()
     maven {
-        url 'https://jitpack.io'
-    }
-    maven {
         url = 'https://m2.dv8tion.net/releases'
-    }
-    maven {
-        name "arbjergDevSnapshots"
-        url "https://maven.lavalink.dev/snapshots"
     }
     maven {
         name "lavalinkDevReleases"
