@@ -43,7 +43,6 @@ public class LavaPlayerAudioService implements AudioService {
 
 	public LavaPlayerAudioService(ModeService modeService) {
 		this.ytSourceManager = new YoutubeAudioSourceManager();
-		this.ytSourceManager.useOauth2(null, false);
 		playerManager.registerSourceManager(ytSourceManager);
 		AudioSourceManagers.registerRemoteSources(playerManager, YoutubeAudioSourceManager.class);
 		AudioSourceManagers.registerLocalSource(playerManager);
