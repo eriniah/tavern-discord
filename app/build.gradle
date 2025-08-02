@@ -17,14 +17,25 @@ dependencies {
     implementation project(':domain')
     implementation project(':audio')
     implementation project(':repository')
-    implementation project(':drinks')
 
     implementation libs.bundles.core
+    implementation libs.bundles.jackson
+    implementation libs.joptSimple
+
+    runtimeOnly libs.bundles.log4j
 }
 
 application {
     // Define the main class for the application.
     mainClass = mainClassName
+
+    // Enable log4j2 colored logging
+    applicationDefaultJvmArgs = [ '-Dlog4j.skipJansi=false', "-Dtavern.version=$version" ]
+}
+
+tasks.named("run") {
+    // Change working dir to root project dir instead of app project dir
+    workingDir = file(rootDir)
 }
 
 distributions {

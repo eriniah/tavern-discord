@@ -1,6 +1,7 @@
 [versions]
-spring = '5.3.34'
-google-guava = '33.1.0-jre'
+spring = '5.3.39'
+google-guava = '33.4.8-jre'
+jakarta-annotations = '3.0.0'
 
 discordJda = '5.0.0-beta.22'
 # Snapshot version for most recent youtube API fix
@@ -8,10 +9,12 @@ discordJda = '5.0.0-beta.22'
 lavaplayer = '2.2.2'
 lavaplayer-youtube = '1.12.0'
 
-jackson = '2.12.7'
+jackson = '2.19.2'
+joptSimple = '5.0.4'
 
-slf4j = '2.0.7'
-log4j = '2.17.1'
+slf4j = '2.0.17'
+log4j = '2.25.1'
+jansi = '2.4.2'
 
 # Test
 spock = '2.0-M4-groovy-3.0'
@@ -27,6 +30,7 @@ spring-beans = { module = 'org.springframework:spring-beans', version.ref = 'spr
 
 # Util
 google-guava = { module = 'com.google.guava:guava', version.ref = 'google-guava' }
+jakarta-annotations = { module = 'jakarta.annotation:jakarta.annotation-api', version.ref = 'jakarta-annotations' }
 
 # Discord JDS API
 discordJda = { module = 'net.dv8tion:JDA', version.ref = 'discordJda' }
@@ -42,15 +46,18 @@ jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core', version.ref
 jackson-databind = { module = 'com.fasterxml.jackson.core:jackson-databind', version.ref = 'jackson' }
 jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations', version.ref = 'jackson' }
 jackson-datatype-jdk8 = { module = 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8', version.ref = 'jackson' }
+jackson-dataformat-properties = { module = 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties', version.ref = 'jackson' }
+
+joptSimple = { module = 'net.sf.jopt-simple:jopt-simple', version.ref = 'joptSimple' }
 
 # Logging
-slf4j-simple = { module = 'org.slf4j:slf4j-simple', version.ref = 'slf4j' }
 slf4j-api = { module = 'org.slf4j:slf4j-api', version.ref = 'slf4j' }
 slf4j-ext = { module = 'org.slf4j:slf4j-ext', version.ref = 'slf4j' }
 
 log4j-api = { module = 'org.apache.logging.log4j:log4j-api', version.ref = 'log4j' }
 log4j-core = { module = 'org.apache.logging.log4j:log4j-core', version.ref = 'log4j' }
-log4j-slf4j = { module = 'org.apache.logging.log4j:log4j-slf4j-impl', version.ref = 'log4j' }
+log4j-slf4j = { module = 'org.apache.logging.log4j:log4j-slf4j2-impl', version.ref = 'log4j' }
+jansi = { module = 'org.fusesource.jansi:jansi', version.ref = 'jansi' }
 
 # === Testing
 # mandatory dependencies for using Spock
@@ -73,7 +80,7 @@ core = [
     'google-guava',
     'slf4j-api',
     'slf4j-ext',
-    'slf4j-simple',
+    'jakarta-annotations'
 ]
 
 jackson = [
@@ -81,12 +88,14 @@ jackson = [
     'jackson-annotations',
     'jackson-databind',
     'jackson-datatype-jdk8',
+    'jackson-dataformat-properties'
 ]
 
 log4j = [
     'log4j-api',
     'log4j-core',
     'log4j-slf4j',
+    'jansi'
 ]
 
 spock = [

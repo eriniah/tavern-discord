@@ -1,6 +1,6 @@
 package com.tavern.utilities;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * Contains a reference to an object

@@ -7,7 +7,10 @@
         </File>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout>
-                <Pattern>%d{yyyy/MM/dd HH:mm:ss} [Thread: %t] %level %logger %marker %message%n</Pattern>
+                <!-- Colored logging -->
+                <Pattern>%highlight{%d{yyyy/MM/dd HH:mm:ss} [Thread: %t] %level %logger %marker %message%n}{FATAL=white, ERROR=red, WARN=yellow, INFO=green, DEBUG=cyan, TRACE=blue}</Pattern>
+                <!-- No log colors -->
+                <!-- <Pattern>%d{yyyy/MM/dd HH:mm:ss} [Thread: %t] %level %logger %marker %message%n</Pattern> -->
             </PatternLayout>
         </Console>
     </Appenders>

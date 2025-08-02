@@ -8,9 +8,9 @@ dependencies {
     implementation 'org.json:json:20231013'
 
     implementation libs.bundles.core
-    // TODO: EMM Remove this dependency from domain
+
+    // TODO: EMM Remove below from domain
     implementation libs.lavaplayer
     implementation libs.lavaplayer.youtube
-    // TODO: EMM Remove this dependency from domain
     implementation libs.discordJda
 }
