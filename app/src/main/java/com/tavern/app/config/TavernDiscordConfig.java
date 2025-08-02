@@ -1,5 +1,7 @@
 package com.tavern.app.config;
 
+import com.tavern.utilities.StringUtils;
+
 public final class TavernDiscordConfig {
     private String token;
     private String commandPrefix;
@@ -7,7 +9,7 @@ public final class TavernDiscordConfig {
     @Override
     public String toString() {
         return "TavernDiscordConfig{" +
-            "token='" + token + '\'' +
+            "token='" + (StringUtils.isNullOrBlank(token) ? "null" : "******") + '\'' +
             ", commandPrefix='" + commandPrefix + '\'' +
             '}';
     }

@@ -29,5 +29,10 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Logger>
+
+        <Logger name="org.springframework" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
     </Loggers>
 </Configuration>

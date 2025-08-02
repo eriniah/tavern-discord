@@ -1,5 +1,7 @@
 package com.tavern.app.config;
 
+import com.tavern.utilities.StringUtils;
+
 public class TavernSpotifyClientConfig {
     private String id;
     private String secret;
@@ -8,7 +10,7 @@ public class TavernSpotifyClientConfig {
     public String toString() {
         return "TavernSpotifyClientConfig{" +
             "id='" + id + '\'' +
-            ", secret='" + secret + '\'' +
+            ", secret='" + (StringUtils.isNullOrBlank(secret) ? "null" : "******") + '\'' +
             '}';
     }
 

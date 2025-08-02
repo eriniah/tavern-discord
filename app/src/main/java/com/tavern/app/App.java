@@ -2,10 +2,12 @@ package com.tavern.app;
 
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.tavern.app.config.TavernConfig;
-import com.tavern.domain.model.Constants;
+import com.tavern.discord.TavernDiscordClient;
+import com.tavern.domain.model.*;
 import joptsimple.*;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
+import org.springframework.context.support.GenericApplicationContext;
 
 import java.io.*;
 import java.util.Arrays;
@@ -24,10 +26,10 @@ public class App {
 		if (args.has(helpSpec)) {
 			try {
 				parser.printHelpOn(System.out);
+				System.exit(0);
 			} catch (IOException ex) {
 				throw new IllegalStateException("Failed to print help menu", ex);
 			}
-			System.exit(0);
 		}
 
 		logger.info("Initializing Tavern v{}", System.getProperty("tavern.version"));
@@ -37,23 +39,30 @@ public class App {
 			logger.debug("Running in: {}", new File(".").getAbsoluteFile().getCanonicalFile());
 			config = readTavernConfig(configSpec, args);
 		} catch (IOException ex) {
-			throw new IllegalStateException("Failed to read configuration file at '" + configSpec.value(args) + "'", ex);
+			throw new IllegalStateException(String.format("Failed to read configuration file at '%s'", configSpec.value(args)), ex);
 		}
 
+		logger.info("Starting up");
+
 		logger.info("Initializing Discord API");
-		// TOOD: EMM Discord
+		TavernDiscordClient discord = new TavernDiscordClient(config.getDiscord().getToken(), config.getDiscord().getCommandPrefix());
+		try {
+			if (!discord.awaitReady()) {
+				logger.error("Failed to connect to discord. Exiting...");
+				System.exit(1);
+			}
+		} catch (InterruptedException ex) {
+			throw new IllegalStateException("Interrupted while connecting to Discord", ex);
+		}
 
 		logger.info("Initializing application context");
-		// TODO: EMM Spring/AppContext/DomainRegistry
+		GenericApplicationContext applicationContext = new GenericApplicationContext();
+		applicationContext.registerBean(TavernMetadata.class, () -> new TavernMetadata(System.getProperty("tavern.version")));
 
-//		GenericApplicationContext applicationContext = new GenericApplicationContext();
-//		applicationContext.registerBean(RollService.class, RollService::new);
-
-		logger.info("Starting application context");
-		// TODO: EMM Start it all up
-//		applicationContext.refresh();
-//		applicationContext.start();
-//		new DomainRegistry().setApplicationContext(applicationContext);
+		logger.debug("Refreshing and starting application context");
+		applicationContext.refresh();
+		applicationContext.start();
+		DomainRegistry.get().setApplicationContext(applicationContext);
     }
 
 	private static TavernConfig readTavernConfig(OptionSpec<String> configSpec, OptionSet args) throws IOException {

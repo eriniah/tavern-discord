@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContextAware;
 
 public final class DomainRegistry implements ApplicationContextAware {
 	private final static DomainRegistry instance = new DomainRegistry();
-	public static DomainRegistry getInstance() {
+	public static DomainRegistry get() {
 		return instance;
 	}
 
@@ -14,8 +14,8 @@ public final class DomainRegistry implements ApplicationContextAware {
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		if (context == null) {
-			context = applicationContext;
+		if (this.context == null) {
+			this.context = applicationContext;
 		}
 	}
 
