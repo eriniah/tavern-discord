@@ -1,4 +1,4 @@
-package com.tavern.discord.listeners.roll;
+package com.tavern.discord.listeners.dice;
 
 import com.tavern.discord.layer.command.slash.annotations.*;
 

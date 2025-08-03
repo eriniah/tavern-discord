@@ -1,16 +1,16 @@
-package com.tavern.discord.listeners.roll;
+package com.tavern.discord.listeners.dice;
 
 import com.tavern.discord.layer.command.slash.annotations.*;
 
 @SlashCommand(name = "dice", description = "Roll a dice. Default: 1d6")
 public class DiceRollCommand {
-    private final String count;
-    private final String sides;
+    private final int count;
+    private final int sides;
 
     @SlashCommandCreator
     public DiceRollCommand(
-        @SlashCommandOption(name = "count", description = "The number of dice to roll") String count,
-        @SlashCommandOption(name = "sides", description = "The number of sides on each dice") String sides
+        @SlashCommandOption(name = "count", description = "The number of dice to roll") int count,
+        @SlashCommandOption(name = "sides", description = "The number of sides on each dice") int sides
     ) {
         this.count = count;
         this.sides = sides;
@@ -24,11 +24,11 @@ public class DiceRollCommand {
             '}';
     }
 
-    public String getCount() {
+    public int getCount() {
         return count;
     }
 
-    public String getSides() {
+    public int getSides() {
         return sides;
     }
 }

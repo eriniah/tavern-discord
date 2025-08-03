@@ -2,7 +2,7 @@ package com.tavern.app;
 
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.tavern.app.config.TavernConfig;
-import com.tavern.discord.TavernDiscordClient;
+import com.tavern.discord.layer.TavernDiscordClient;
 import com.tavern.domain.model.*;
 import joptsimple.*;
 import org.slf4j.ext.XLogger;

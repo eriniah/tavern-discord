@@ -111,7 +111,7 @@ public final class TavernSlashCommandFactory {
     public final class TavernSlashCommandBuilder {
         private final SlashCommandData command;
         private final Map<String, StructuredTavernSlashCommand.TavernSubCommand> subCommands = new HashMap<>();
-        private final Map<String, Map<String, StructuredTavernSlashCommand.TavernSubCommand>> subgroupCommands = new HashMap<>();
+        private final Map<String, StructuredTavernSlashCommand.TavernCommandSubgroup> subgroupCommands = new HashMap<>();
 
         TavernSlashCommandBuilder(String name, String description) {
             this.command = Commands.slash(name, description);
@@ -128,8 +128,11 @@ public final class TavernSlashCommandFactory {
             return this;
         }
 
-        public TavernSlashCommandBuilder addSubCommandGroup(String name, String description, Consumer<SubcommandGroupData> configure) {
-            return addSubCommand(commandClass, __ -> {});
+        public TavernSlashCommandBuilder addSubCommandGroup(String name, String description, Consumer<SubcommandGroupBuilder> configure) {
+            SubcommandGroupBuilder subcommandGroupBuilder = new SubcommandGroupBuilder(name, description);
+            configure.accept(subcommandGroupBuilder);
+            subgroupCommands.put(name, subcommandGroupBuilder.build());
+            return this;
         }
 
         public TavernSlashCommand build() {
@@ -138,24 +141,39 @@ public final class TavernSlashCommandFactory {
 
         public TavernSlashCommand build(Consumer<SlashCommandData> configure) {
             configure.accept(command);
-            return new StructuredTavernSlashCommand(command, new HashMap<>(), new HashMap<>());
+            return new StructuredTavernSlashCommand(command, subCommands, subgroupCommands);
         }
     }
 
     public final class SubcommandGroupBuilder {
+        private final String name;
+        private final String description;
         private final Map<String, StructuredTavernSlashCommand.TavernSubCommand> subCommands = new HashMap<>();
 
-        public SubcommandGroupBuilder() { }
+        public SubcommandGroupBuilder(String name, String description) {
+            this.name = name;
+            this.description = description;
+        }
 
-        public TavernSlashCommandBuilder addSubCommand(Class<?> commandClass) {
+        public SubcommandGroupBuilder addSubCommand(Class<?> commandClass) {
             return addSubCommand(commandClass, __ -> {});
         }
 
-        public TavernSlashCommandBuilder addSubCommand(Class<?> commandClass, Consumer<SubcommandData> configure) {
+        public SubcommandGroupBuilder addSubCommand(Class<?> commandClass, Consumer<SubcommandData> configure) {
             SubcommandData command = getSubCommand(commandClass);
             configure.accept(command);
             subCommands.put(command.getName(), new StructuredTavernSlashCommand.TavernSubCommand(command, commandClass));
             return this;
+        }
+
+        StructuredTavernSlashCommand.TavernCommandSubgroup build() {
+            return build(__ -> {});
+        }
+
+        StructuredTavernSlashCommand.TavernCommandSubgroup build(Consumer<SubcommandGroupData> configure) {
+            SubcommandGroupData subcommandGroupData = new SubcommandGroupData(name, description);
+            configure.accept(subcommandGroupData);
+            return new StructuredTavernSlashCommand.TavernCommandSubgroup(subcommandGroupData, subCommands);
         }
 
     }

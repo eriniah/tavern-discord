@@ -2,7 +2,7 @@
  * Common Plugin for all modules
  */
 plugins {
-
+    id 'groovy'
 }
 
 repositories {
