@@ -1,8 +1,11 @@
 package com.tavern.discord.layer;
 
 import com.tavern.discord.layer.command.slash.*;
+import com.tavern.utilities.convert.TypeConverterRegistries;
+import com.tavern.utilities.convert.TypeConverterRegistry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -18,18 +21,26 @@ public final class TavernDiscordClient implements AutoCloseable {
     private final JDA jda;
     private final String defaultCommandPrefix;
     private final Injectables injectables;
-    private final Map<TavernSlashCommand, SlashCommandListener> slashCommandListeners;
+    private final TavernSlashCommandCache slashCommandCache;
+    private final TypeConverterRegistry typeConverter;
 
     private TavernDiscordClient(TavernDiscordClient.Builder builder) {
         this.defaultCommandPrefix = builder.defaultCommandPrefix;
         this.injectables = builder.injectables.build();
 
-        this.slashCommandListeners = new HashMap<>();
-        TavernSlashCommandFactory slashCommandFactory = new TavernSlashCommandFactory();
-        for (SlashCommandListener listener : builder.slashCommandListeners) {
-            TavernSlashCommand command = listener.getCommand(slashCommandFactory);
-            this.slashCommandListeners.put(command, listener);
+        this.slashCommandCache = new TavernSlashCommandCache(new TavernSlashCommandFactory(), builder.slashCommandListeners);
+
+        // Internal type conversions
+        TypeConverterRegistry typeConverter = TypeConverterRegistries.ofRegistries(
+            TypeConverterRegistries.defaultRegistry()
+        );
+        if (null != builder.typeConverter) {
+            typeConverter = TypeConverterRegistries.ofRegistries(
+                builder.typeConverter,
+                typeConverter
+            );
         }
+        this.typeConverter = typeConverter;
 
         jda = JDABuilder
             .create(builder.token, Arrays.asList(
@@ -42,7 +53,7 @@ public final class TavernDiscordClient implements AutoCloseable {
                 GUILD_MEMBERS
             ))
             .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
-            .addEventListeners(new TavernSlashCommandListener())
+            .addEventListeners(new SlashCommandListenerAdaptor(injectables, typeConverter, slashCommandCache))
             .build();
     }
 
@@ -73,8 +84,9 @@ public final class TavernDiscordClient implements AutoCloseable {
     public static class Builder {
         private final String token;
         private final Injectables.Builder injectables;
-        private final List<SlashCommandListener> slashCommandListeners = new ArrayList<>();
+        private final List<Class<? extends SlashCommandListener>> slashCommandListeners = new ArrayList<>();
         private String defaultCommandPrefix = "$";
+        private TypeConverterRegistry typeConverter = null;
 
         public Builder(String token) {
             this.token = token;
@@ -86,18 +98,23 @@ public final class TavernDiscordClient implements AutoCloseable {
             return this;
         }
 
-        public Builder listener(SlashCommandListener listener) {
+        public Builder listener(Class<? extends SlashCommandListener> listener) {
             slashCommandListeners.add(listener);
             return this;
         }
 
-        public Builder listeners(SlashCommandListener ...listener) {
+        public Builder listeners(Class<? extends SlashCommandListener> ...listener) {
             Arrays.stream(listener).forEach(this::listener);
             return this;
         }
 
         public Builder injectables(Consumer<Injectables.Builder> configurer) {
             configurer.accept(injectables);
+            return this;
+        }
+
+        public Builder typeConverter(TypeConverterRegistry typeConverter) {
+            this.typeConverter = typeConverter;
             return this;
         }
 

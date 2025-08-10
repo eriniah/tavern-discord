@@ -1,7 +1,9 @@
 package com.tavern.discord.layer.command.slash;
 
+import com.tavern.discord.layer.command.CommandId;
 import com.tavern.utilities.CollectionUtils;
 import net.dv8tion.jda.api.interactions.commands.build.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -22,11 +24,28 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
     private final Map<String, TavernSubCommand> subCommands;
     // Subgroup name -> subgroup
     private final Map<String, TavernCommandSubgroup> subgroups;
+    private final Map<CommandId, Class<?>> commandToDataClass;
 
     StructuredTavernSlashCommand(SlashCommandData slashCommand, Map<String, TavernSubCommand> subCommands, Map<String, TavernCommandSubgroup> subgroups) {
         this.slashCommand = slashCommand;
         this.subCommands = CollectionUtils.wrapIfPresent(subCommands, HashMap::new);
         this.subgroups = CollectionUtils.wrapIfPresent(subgroups, HashMap::new);
+
+        this.commandToDataClass = new HashMap<>();
+        subCommands.forEach((name, command) -> {
+            commandToDataClass.put(
+                new CommandId(name, null, command.getSubcommandData().getName()),
+                command.getCommandClass()
+            );
+        });
+        subgroups.forEach((subGroupName, subGroup) -> {
+            subGroup.getSubCommands().forEach((name, command) -> {
+                commandToDataClass.put(
+                    new CommandId(name, subGroupName, command.getSubcommandData().getName()),
+                    command.getCommandClass()
+                );
+            });
+        });
     }
 
     @Override
@@ -42,8 +61,24 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
     }
 
     @Override
+    public String getCommandName() {
+        return slashCommand.getName();
+    }
+
+    @Override
     public SlashCommandData getSlashCommand() {
         return slashCommand;
+    }
+
+    @Override
+    public void visit(TavernSlashCommandVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Nullable
+    @Override
+    public Class<?> getCommandClass(CommandId commandId) {
+        return commandToDataClass.get(commandId);
     }
 
     /**
