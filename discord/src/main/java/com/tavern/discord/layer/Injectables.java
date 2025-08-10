@@ -7,57 +7,23 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class Injectables {
-    private final Map<Class<?>, Injectable<?>> injectables;
+public interface Injectables {
 
-    private Injectables(Map<Class<?>, Injectable<?>> injectables) {
-        this.injectables = CollectionUtils.wrapIfPresent(injectables, HashMap::new);
-    }
+    <T> T get(Class<T> type);
 
-    @SuppressWarnings("unchecked")
-    public <T> T get(Class<T> type) {
-        Injectable<T> injectable = (Injectable<T>) injectables.get(type);
-        if (null == injectable) {
-            return null;
-        }
-        return injectable.getInstance();
-    }
-
-    private static class Injectable<T> {
-        private final Supplier<T> supplier;
-        private final Class<T> type;
-        private T instance;
-
-        public Injectable(Class<T> type, Supplier<T> supplier) {
-            this.type = type;
-            this.supplier = supplier;
-        }
-
-        public T getInstance() {
-            if (null == instance) {
-                instance = supplier.get();
-            }
-            return instance;
-        }
-
-        public Class<T> getType() {
-            return type;
-        }
-    }
-
-    public static Builder builder() {
+    static Builder builder() {
         return new Builder();
     }
 
-    public static final class Builder {
-        private final Map<Class<?>, Injectable<?>> injectables;
+    final class Builder {
+        private final Map<Class<?>, InjectablesImpl.Injectable<?>> injectables;
 
         public Builder() {
             this.injectables = new HashMap<>();
         }
 
         public <T> Builder add(Class<T> type) {
-            injectables.put(type, new Injectable<>(type, () -> {
+            injectables.put(type, new InjectablesImpl.Injectable<>(type, () -> {
                 try {
                     Constructor<T> constructor = type.getConstructor();
                     return constructor.newInstance();
@@ -70,12 +36,51 @@ public class Injectables {
         }
 
         public <T> Builder add(Class<T> type, Supplier<T> supplier) {
-            injectables.put(type, new Injectable<>(type, supplier));
+            injectables.put(type, new InjectablesImpl.Injectable<>(type, supplier));
             return this;
         }
 
         public Injectables build() {
-            return new Injectables(injectables);
+            return new InjectablesImpl(injectables);
+        }
+
+        private final class InjectablesImpl implements Injectables {
+            private final Map<Class<?>, Injectable<?>> injectables;
+
+            private InjectablesImpl(Map<Class<?>, Injectable<?>> injectables) {
+                this.injectables = CollectionUtils.wrapIfPresent(injectables, HashMap::new);
+            }
+
+            @SuppressWarnings("unchecked")
+            public <T> T get(Class<T> type) {
+                Injectable<T> injectable = (Injectable<T>) injectables.get(type);
+                if (null == injectable) {
+                    return null;
+                }
+                return injectable.getInstance();
+            }
+
+            private static class Injectable<T> {
+                private final Supplier<T> supplier;
+                private final Class<T> type;
+                private T instance;
+
+                public Injectable(Class<T> type, Supplier<T> supplier) {
+                    this.type = type;
+                    this.supplier = supplier;
+                }
+
+                public T getInstance() {
+                    if (null == instance) {
+                        instance = supplier.get();
+                    }
+                    return instance;
+                }
+
+                public Class<T> getType() {
+                    return type;
+                }
+            }
         }
     }
 }

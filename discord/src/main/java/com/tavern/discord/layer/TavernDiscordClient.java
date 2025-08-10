@@ -1,17 +1,18 @@
 package com.tavern.discord.layer;
 
-import com.tavern.discord.layer.command.slash.*;
-import com.tavern.utilities.convert.TypeConverterRegistries;
-import com.tavern.utilities.convert.TypeConverterRegistry;
+import com.tavern.discord.layer.command.slash.SlashCommandListener;
+import com.tavern.discord.layer.command.slash.TavernSlashCommandFactory;
+import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 import static net.dv8tion.jda.api.requests.GatewayIntent.*;
 
@@ -26,12 +27,25 @@ public final class TavernDiscordClient implements AutoCloseable {
 
     private TavernDiscordClient(TavernDiscordClient.Builder builder) {
         this.defaultCommandPrefix = builder.defaultCommandPrefix;
-        this.injectables = builder.injectables.build();
+        this.injectables = Objects.requireNonNullElseGet(builder.injectables, () -> new Injectables.Builder().build());
 
         this.slashCommandCache = new TavernSlashCommandCache(new TavernSlashCommandFactory(), builder.slashCommandListeners);
 
         // Internal type conversions
         TypeConverterRegistry typeConverter = TypeConverterRegistries.ofRegistries(
+            TypeConverterRegistries.ofConvertersBuilder()
+                .add(TypeConverter.of(OptionMapping.class, String.class, OptionMapping::getAsString))
+                .add(TypeConverter.of(OptionMapping.class, Long.class, OptionMapping::getAsLong))
+                .add(TypeConverter.of(OptionMapping.class, Integer.class, OptionMapping::getAsInt))
+                .add(TypeConverter.of(OptionMapping.class, Double.class, OptionMapping::getAsDouble))
+                .add(TypeConverter.of(OptionMapping.class, Boolean.class, OptionMapping::getAsBoolean))
+                .add(TypeConverter.of(OptionMapping.class, Message.Attachment.class, OptionMapping::getAsAttachment))
+                .add(TypeConverter.of(OptionMapping.class, GuildChannelUnion.class, OptionMapping::getAsChannel))
+                .add(TypeConverter.of(OptionMapping.class, Member.class, OptionMapping::getAsMember))
+                .add(TypeConverter.of(OptionMapping.class, IMentionable.class, OptionMapping::getAsMentionable))
+                .add(TypeConverter.of(OptionMapping.class, Role.class, OptionMapping::getAsRole))
+                .add(TypeConverter.of(OptionMapping.class, User.class, OptionMapping::getAsUser))
+                .build(),
             TypeConverterRegistries.defaultRegistry()
         );
         if (null != builder.typeConverter) {
@@ -77,20 +91,19 @@ public final class TavernDiscordClient implements AutoCloseable {
         jda.shutdown();
     }
 
-    public Builder builder(String token) {
+    public static Builder builder(String token) {
         return new Builder(token);
     }
 
     public static class Builder {
         private final String token;
-        private final Injectables.Builder injectables;
         private final List<Class<? extends SlashCommandListener>> slashCommandListeners = new ArrayList<>();
         private String defaultCommandPrefix = "$";
+        private Injectables injectables = null;
         private TypeConverterRegistry typeConverter = null;
 
         public Builder(String token) {
             this.token = token;
-            this.injectables = Injectables.builder();
         }
 
         public Builder commandPrefix(String prefix) {
@@ -103,13 +116,13 @@ public final class TavernDiscordClient implements AutoCloseable {
             return this;
         }
 
-        public Builder listeners(Class<? extends SlashCommandListener> ...listener) {
-            Arrays.stream(listener).forEach(this::listener);
+        public Builder listeners(List<Class<? extends SlashCommandListener>> listeners) {
+            slashCommandListeners.addAll(listeners);
             return this;
         }
 
-        public Builder injectables(Consumer<Injectables.Builder> configurer) {
-            configurer.accept(injectables);
+        public Builder injectables(Injectables injectables) {
+            this.injectables = injectables;
             return this;
         }
 

@@ -13,7 +13,7 @@ public abstract class Identifier {
 	protected Identifier() { }
 
 	protected Identifier(String id) {
-		this.id = id;
+        setId(id);
 	}
 
 	@Override

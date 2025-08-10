@@ -2,7 +2,10 @@ package com.tavern.app;
 
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.tavern.app.config.TavernConfig;
+import com.tavern.discord.layer.Injectables;
 import com.tavern.discord.layer.TavernDiscordClient;
+import com.tavern.discord.listeners.dice.RollSlashCommandListener;
+import com.tavern.discord.listeners.dice.roll.DiceFactory;
 import com.tavern.domain.model.*;
 import joptsimple.*;
 import org.slf4j.ext.XLogger;
@@ -33,6 +36,7 @@ public class App {
 		}
 
 		logger.info("Initializing Tavern v{}", System.getProperty("tavern.version"));
+        logger.debug("Running with arguments: {}", Arrays.toString(pArgs));
 
 		TavernConfig config;
 		try {
@@ -42,10 +46,30 @@ public class App {
 			throw new IllegalStateException(String.format("Failed to read configuration file at '%s'", configSpec.value(args)), ex);
 		}
 
-		logger.info("Starting up");
+        logger.info("Initializing application context");
+        GenericApplicationContext applicationContext = new GenericApplicationContext();
+        applicationContext.registerBean(TavernMetadata.class, () -> new TavernMetadata(System.getProperty("tavern.version")));
+        applicationContext.registerBean(TavernConfig.class, () -> config);
+        applicationContext.registerBean(DiceFactory.class, DiceFactory::new);
+
+        logger.debug("Refreshing and starting application context");
+        applicationContext.refresh();
+        applicationContext.start();
 
 		logger.info("Initializing Discord API");
-		TavernDiscordClient discord = new TavernDiscordClient(config.getDiscord().getToken(), config.getDiscord().getCommandPrefix());
+		TavernDiscordClient discord = TavernDiscordClient.builder(config.getDiscord().getToken())
+            .commandPrefix(config.getDiscord().getCommandPrefix())
+            .injectables(new Injectables() {
+                @Override
+                public <T> T get(Class<T> type) {
+                    return applicationContext.getBean(type);
+                }
+            })
+            .listeners(Arrays.asList(
+                RollSlashCommandListener.class
+            ))
+            .build();
+
 		try {
 			if (!discord.awaitReady()) {
 				logger.error("Failed to connect to discord. Exiting...");
@@ -54,15 +78,6 @@ public class App {
 		} catch (InterruptedException ex) {
 			throw new IllegalStateException("Interrupted while connecting to Discord", ex);
 		}
-
-		logger.info("Initializing application context");
-		GenericApplicationContext applicationContext = new GenericApplicationContext();
-		applicationContext.registerBean(TavernMetadata.class, () -> new TavernMetadata(System.getProperty("tavern.version")));
-
-		logger.debug("Refreshing and starting application context");
-		applicationContext.refresh();
-		applicationContext.start();
-		DomainRegistry.get().setApplicationContext(applicationContext);
     }
 
 	private static TavernConfig readTavernConfig(OptionSpec<String> configSpec, OptionSet args) throws IOException {

@@ -7,6 +7,10 @@ public interface TypeConverter<From, To> {
     Class<From> getFrom();
     Class<To> getTo();
 
+    default Function<From, To> function() {
+        return this::convert;
+    }
+
     static <From, To> TypeConverter<From, To> of(Class<From> from, Class<To> to, Function<? super From, To> converter) {
         return new TypeConverterSupport<From, To>(from, to) {
             @Override

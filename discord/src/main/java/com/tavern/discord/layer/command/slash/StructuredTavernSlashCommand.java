@@ -34,14 +34,14 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
         this.commandToDataClass = new HashMap<>();
         subCommands.forEach((name, command) -> {
             commandToDataClass.put(
-                new CommandId(name, null, command.getSubcommandData().getName()),
+                new CommandId(slashCommand.getName(), null, name),
                 command.getCommandClass()
             );
         });
         subgroups.forEach((subGroupName, subGroup) -> {
             subGroup.getSubCommands().forEach((name, command) -> {
                 commandToDataClass.put(
-                    new CommandId(name, subGroupName, command.getSubcommandData().getName()),
+                    new CommandId(slashCommand.getName(), subGroupName, name),
                     command.getCommandClass()
                 );
             });

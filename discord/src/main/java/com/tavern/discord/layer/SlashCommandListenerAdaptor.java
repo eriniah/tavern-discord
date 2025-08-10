@@ -4,11 +4,14 @@ import com.tavern.discord.layer.annotations.Context;
 import com.tavern.discord.layer.annotations.Inject;
 import com.tavern.discord.layer.command.CommandId;
 import com.tavern.discord.layer.command.slash.*;
-import com.tavern.discord.layer.command.slash.annotations.SlashCommandCreator;
-import com.tavern.discord.layer.command.slash.annotations.SlashCommandHandler;
+import com.tavern.discord.layer.command.slash.annotations.*;
+import com.tavern.domain.model.discord.GuildId;
 import com.tavern.utilities.*;
 import com.tavern.utilities.convert.TypeConverterRegistries;
 import com.tavern.utilities.convert.TypeConverterRegistry;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -44,10 +47,10 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
 
         CommandId commandId = new CommandId(event.getName(), event.getSubcommandGroup(), event.getSubcommandName());
 
-        TavernSlashCommand command = commandCache.getCommand(event.getCommandId());
+        TavernSlashCommand command = commandCache.getCommand(commandId.command());
         if (null == command) {
-            logger.trace("Ignoring unknown slash command: {}", event.getCommandId());
-            event.reply(String.format("Unknown command '%s'", event.getCommandId()))
+            logger.trace("Ignoring unknown slash command: {}", commandId.command());
+            event.reply(String.format("Unknown command '%s'", commandId.command()))
                 .setEphemeral(true)
                 .queue();
             return;
@@ -62,15 +65,8 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
             return;
         }
 
-        // Create command instance
-        for (Constructor<?> constructor: commandClass.getConstructors()) {
-            if (null != constructor.getAnnotation(SlashCommandCreator.class)) {
-
-            }
-        }
-
         // Locate listener method
-        SlashCommandListener listener = commandCache.getListener(commandId);
+        SlashCommandListener listener = commandCache.createListener(commandId);
         if (null == listener) {
             logger.trace("No listener for command: {}", commandId);
             event.reply(String.format("Unknown command '%s'", commandId))
@@ -79,37 +75,103 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
             return;
         }
 
-        Method[] listenerMethods = listener.getClass().getMethods();
-        for (Method listenerMethod: listenerMethods) {
-            SlashCommandHandler handler = listenerMethod.getAnnotation(SlashCommandHandler.class);
-            if (null == handler) {
-                continue;
-            }
+        Injectables contextuals = createContext(event);
 
-            Parameter[] parameters = listenerMethod.getParameters();
-            for (Parameter parameter: parameters) {
-                Context context = parameter.getAnnotation(Context.class);
-                if (null != context) {
-                    // TODO: EMM Handle context injection
-                    continue;
+        // Inject into class fields
+        for (Field field: listener.getClass().getDeclaredFields()) {
+            Inject inject = field.getAnnotation(Inject.class);
+            Context context = field.getAnnotation(Context.class);
+
+            if (null != inject) {
+                try {
+                    if (field.canAccess(listener) || field.trySetAccessible()) {
+                        field.set(listener, injectables.get(field.getType()));
+                    }
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException("Failed to inject field " + field.getName(), ex);
                 }
-
-                Inject inject = parameter.getAnnotation(Inject.class);
-                if (null != inject) {
-                    // TODO: EMM Handle Inject injection
-                    continue;
-                }
-
-                if (commandClass.equals(parameter.getType())) {
-                    commandClass.getMethods()
+            } else if (null != context) {
+                try {
+                    if (field.canAccess(listener) || field.trySetAccessible()) {
+                        field.set(listener, contextuals.get(field.getType()));
+                    }
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException("Failed to inject context field " + field.getName(), ex);
                 }
             }
         }
 
-        // TODO: EMM
-        //       Do magical lookups
-        //       Accept the injectables and attempt to populate
-        //       Instantiate command
+        Object commandInstance = createCommandInstance(event, commandClass);
+
+        // Locate command method
+        Method commandMethod = Arrays.stream(listener.getClass().getMethods())
+            .filter(method -> {
+                SlashCommandHandler handler = method.getAnnotation(SlashCommandHandler.class);
+                return null != handler
+                    && Arrays.stream(method.getParameterTypes())
+                        .anyMatch(paramType -> paramType.equals(commandClass));
+            }).findFirst().orElseThrow(() -> new IllegalStateException("Failed to locate command method for " + commandId));
+
+        // Build method parameters
+        Object[] commandParameters = Arrays.stream(commandMethod.getParameters())
+            .map(parameter -> {
+                Inject inject = parameter.getAnnotation(Inject.class);
+                Context context = parameter.getAnnotation(Context.class);
+
+                if (null != inject) {
+                    return injectables.get(parameter.getType());
+                } else if (null != context) {
+                    return contextuals.get(parameter.getType());
+                } else if (commandClass.equals(parameter.getType())) {
+                    return commandInstance;
+                } else {
+                    logger.trace("Unknown mapping for parameter type '{}'", parameter.getType().getSimpleName());
+                    return null;
+                }
+            }).toArray();
+
+        try {
+            commandMethod.invoke(listener, commandParameters);
+        } catch (InvocationTargetException | IllegalAccessException ex) {
+            throw new IllegalStateException("Failed to invoke command method", ex);
+        }
+    }
+
+    private Injectables createContext(SlashCommandInteractionEvent event) {
+        Injectables.Builder context = Injectables.builder()
+            .add(JDA.class, event::getJDA)
+            .add(SlashCommandInteractionEvent.class, () -> event)
+            .add(MessageChannel.class, event::getChannel);
+
+        if (event.getGuild() != null) {
+            context.add(Guild.class, event::getGuild)
+                .add(GuildId.class, () -> new GuildId(event.getGuild().getId()));
+        }
+
+        return context.build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T createCommandInstance(SlashCommandInteractionEvent event, Class<T> commandClass) {
+        // Locate command class constructor
+        Constructor<T> commandConstructor = (Constructor<T>) Arrays.stream(commandClass.getConstructors())
+            .filter(constructor -> null != constructor.getAnnotation(SlashCommandCreator.class))
+            .findFirst().orElseThrow(() -> new IllegalArgumentException(String.format("Command type '%s' has no constructor annotated with @SlashCommandCreator", commandClass.getSimpleName())));
+        Object[] parameters = Arrays.stream(commandConstructor.getParameters())
+            .map(parameter -> {
+                SlashCommandOption option = parameter.getAnnotation(SlashCommandOption.class);
+                if (null == option) {
+                    logger.debug("Unknown mapping for command creator parameter type '{}'", parameter.getType().getSimpleName());
+                    return null;
+                }
+                return event.getOption(option.name(), typeConverter.get(OptionMapping.class, parameter.getType()).function());
+            }).toArray();
+
+        try {
+            return commandConstructor.newInstance(parameters);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException ex) {
+            throw new IllegalArgumentException(String.format("Unable to construct instances of command '%s'", commandClass.getSimpleName()), ex);
+        }
     }
 
 }
