@@ -3,6 +3,7 @@ package com.tavern.discord.layer;
 import com.tavern.discord.layer.command.CommandId;
 import com.tavern.discord.layer.command.slash.*;
 import jakarta.annotation.Nullable;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.util.Collection;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 final class TavernSlashCommandCache {
-    private final Map<String, CommandCache> nameToSlashCommand;
+    private final Map<String, CachedCommandHandler> nameToSlashCommand;
     private final TavernSlashCommandFactory factory;
 
     TavernSlashCommandCache(TavernSlashCommandFactory factory, Collection<Class<? extends SlashCommandListener>> slashCommandListeners) {
@@ -26,7 +27,7 @@ final class TavernSlashCommandCache {
                     throw new IllegalArgumentException(String.format("Failed to construct listener '%s'.", command.getSimpleName()), ex);
                 }
 
-                return new CommandCache(slashCommand, command);
+                return new CachedCommandHandler(slashCommand, command);
             })
             .collect(Collectors.toMap(
                 command -> command.command.getSlashCommand().getName(),
@@ -50,7 +51,15 @@ final class TavernSlashCommandCache {
         return nameToSlashCommand.get(commandId.command()).createListener();
     }
 
-    private record CommandCache(TavernSlashCommand command, Class<? extends SlashCommandListener> listenerClass) {
+    static class CachedCommandHandler {
+        private final TavernSlashCommand command;
+        private final Class<? extends SlashCommandListener> listenerClass;
+
+        public CachedCommandHandler(TavernSlashCommand command, Class<? extends SlashCommandListener> listenerClass) {
+            this.command = command;
+            this.listenerClass = listenerClass;
+        }
+
         public SlashCommandListener createListener() {
             try {
                 return listenerClass.getConstructor().newInstance();

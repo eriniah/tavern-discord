@@ -6,32 +6,44 @@ import com.tavern.discord.layer.command.CommandId;
 import com.tavern.discord.layer.command.slash.*;
 import com.tavern.discord.layer.command.slash.annotations.*;
 import com.tavern.domain.model.discord.GuildId;
-import com.tavern.utilities.*;
-import com.tavern.utilities.convert.TypeConverterRegistries;
-import com.tavern.utilities.convert.TypeConverterRegistry;
+import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.Function;
 
 class SlashCommandListenerAdaptor extends ListenerAdapter {
     private static final XLogger logger = XLoggerFactory.getXLogger(SlashCommandListenerAdaptor.class);
 
     private final Injectables injectables;
-    private final TypeConverterRegistry typeConverter;
+    private final TypeConverterRegistry optionTypeConverter;
     private final TavernSlashCommandCache commandCache;
+    private final TypeConverterRegistry returnTypeConverter;
 
-    public SlashCommandListenerAdaptor(Injectables injectables, TypeConverterRegistry typeConverter, TavernSlashCommandCache commandCache) {
+    public SlashCommandListenerAdaptor(Injectables injectables, TypeConverterRegistry optionTypeConverter, TavernSlashCommandCache commandCache) {
         this.injectables = injectables;
-        this.typeConverter = typeConverter;
+        this.optionTypeConverter = optionTypeConverter;
         this.commandCache = commandCache;
+
+        this.returnTypeConverter = TypeConverterRegistries.ofConvertersBuilder()
+            .add(TypeConverter.of(MessageCreateData.class, MessageCreateData.class, Function.identity()))
+            .add(TypeConverter.of(String.class, MessageCreateData.class, MessageCreateData::fromContent))
+            .add(TypeConverter.of(MessageEditData.class, MessageCreateData.class, MessageCreateData::fromEditData))
+            .add(TypeConverter.of(MessageEmbed.class, MessageCreateData.class, MessageCreateData::fromEmbeds))
+            .add(TypeConverter.of(FileUpload.class, MessageCreateData.class, MessageCreateData::fromFiles))
+            .build();
     }
 
     @Override
@@ -131,7 +143,15 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
             }).toArray();
 
         try {
-            commandMethod.invoke(listener, commandParameters);
+            Object ret = commandMethod.invoke(listener, commandParameters);
+
+            if (!void.class.equals(commandMethod.getReturnType()) && null != ret) {
+                // Attempt to convert non-collection types with the type converter
+                MessageCreateData replyData = returnTypeConverter.convert(commandMethod.getReturnType(), MessageCreateData.class);
+                if (null != replyData) {
+                    event.reply(replyData).queue();
+                }
+            }
         } catch (InvocationTargetException | IllegalAccessException ex) {
             throw new IllegalStateException("Failed to invoke command method", ex);
         }
@@ -164,7 +184,7 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
                     logger.debug("Unknown mapping for command creator parameter type '{}'", parameter.getType().getSimpleName());
                     return null;
                 }
-                return event.getOption(option.name(), typeConverter.get(OptionMapping.class, parameter.getType()).function());
+                return event.getOption(option.name(), optionTypeConverter.get(OptionMapping.class, parameter.getType()).function());
             }).toArray();
 
         try {

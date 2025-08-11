@@ -2,29 +2,26 @@ package com.tavern.discord.listeners.dice.roll;
 
 import java.util.Random;
 
-final class Constant implements DiceExpressionValue {
-    private final int value;
+record Constant(int value) implements DiceExpressionValue {
 
-    Constant(int value) {
+    Constant {
         if (value < 0 || UPPER_BOUND < value) {
             throw new IllegalArgumentException("Constant must be greater than or equal to 0 and less than " + UPPER_BOUND);
         }
-        this.value = value;
     }
 
     @Override
-    public DiceExpressionResult evaluate(Random random) {
-        return DiceExpressionResult.values(this)
-            .add(value)
-            .build();
+    public DiceExpression roll(Random random) {
+        return this;
     }
 
     @Override
-    public void visit(DiceExpressionVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    public int getValue() {
+    public int evaluate(Random random) {
         return value;
+    }
+
+    @Override
+    public String getRepresentation() {
+        return "" + value;
     }
 }

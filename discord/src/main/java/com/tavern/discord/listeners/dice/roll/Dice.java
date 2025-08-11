@@ -1,45 +1,47 @@
 package com.tavern.discord.listeners.dice.roll;
 
-import java.util.Random;
-import java.util.stream.IntStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
-final class Dice implements DiceExpressionValue {
-    private final int count;
-    private final int sides;
+record Dice(int count, int sides) implements DiceExpressionValue {
 
-    Dice(int count, int sides) throws IllegalArgumentException {
+    Dice {
         if (count < 1 || UPPER_BOUND < count) {
             throw new IllegalArgumentException("Count must be greater than 0 and less than " + UPPER_BOUND);
         }
-        this.count = count;
-
         if (sides < 1 || UPPER_BOUND < sides) {
             throw new IllegalArgumentException("Sides must be greater than 0 and less than" + UPPER_BOUND);
         }
-        this.sides = sides;
     }
 
     @Override
-    public DiceExpressionResult evaluate(Random random) {
-        DiceExpressionResult.ValuesBuilder result = DiceExpressionResult.values(this);
+    public DiceExpression roll(Random random) {
+        return new ParenthesisExpression(
+            AddAndSubtractExpression.add(
+                doRoll(random).stream()
+                    .map(Constant::new)
+                    .collect(Collectors.toList())
+            )
+        );
+    }
 
-        IntStream.range(0, count)
-            .map(__ -> random.nextInt(1, sides + 1))
-            .forEach(result::add);
+    private List<Integer> doRoll(Random random) {
+        List<Integer> rolls = new ArrayList<>();
 
-        return result.build();
+        for (int i = 0; i < count; i++) {
+            rolls.add(random.nextInt(sides) + 1);
+        }
+
+        return rolls;
     }
 
     @Override
-    public void visit(DiceExpressionVisitor visitor) {
-        visitor.visit(this);
+    public int evaluate(Random random) {
+        return doRoll(random).stream().mapToInt(Integer::intValue).sum();
     }
 
-    public int getCount() {
-        return count;
-    }
-
-    public int getSides() {
-        return sides;
+    @Override
+    public String getRepresentation() {
+        return String.format("%dd%d", count, sides);
     }
 }
