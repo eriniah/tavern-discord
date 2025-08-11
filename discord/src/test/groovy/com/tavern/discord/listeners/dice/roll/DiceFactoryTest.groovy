@@ -1,144 +1,171 @@
 package com.tavern.discord.listeners.dice.roll
 
-import spock.lang.Specification
+import spock.lang.Specification;
 
 class DiceFactoryTest extends Specification {
+    private final Random NOT_RANDOM = Random.from(new ConstantRandomGenerator(2))
 
-    private DiceFactory diceFactory = new DiceFactory()
-    private Random random = Random.from(new ConstantRandomGenerator(2));
+    def "parseExpression parses single constant correctly"() {
+        given:
+        String expression = "5"
+        DiceFactory diceFactory = new DiceFactory()
 
-    def "parseExpression should throw IllegalArgumentException for null input"() {
         when:
-        diceFactory.parseExpression(null)
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        result != null
+        result.getRepresentation() == "5"
+        result.evaluate(NOT_RANDOM) == 5
     }
 
-    def "parseExpression should throw IllegalArgumentException for empty input"() {
+    def "parseExpression parses single dice correctly"() {
+        given:
+        String expression = "1d6"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("")
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        result != null
+        result.getRepresentation() == "1d6"
+        result.evaluate(NOT_RANDOM) == 2
     }
 
-    def "parseExpression should throw IllegalArgumentException for whitespace input"() {
+    def "parseExpression parses addition correctly"() {
+        given:
+        String expression = "4 + 2"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("   ")
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        result != null
+        result.getRepresentation() == "4 + 2"
+        result.evaluate(NOT_RANDOM) == 6
     }
 
-    def "parseExpression should correctly parse valid single dice expression"() {
+    def "parseExpression parses subtraction correctly"() {
+        given:
+        String expression = "9 - 3"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        def expression = diceFactory.parseExpression("3d6")
-        def result = expression.evaluate(random)
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        expression instanceof Dice
-        ((Dice) expression).count == 3
-        ((Dice) expression).sides == 6
-        result.part == expression
-        result.total == 6
-        result.values.size() == 3
-        result.values.stream().allMatch { it == 2 }
-        result.results.isEmpty()
+        result != null
+        result.getRepresentation() == "9 - 3"
+        result.evaluate(NOT_RANDOM) == 6
     }
 
-    def "parseExpression should correctly parse valid constant expression"() {
+    def "parseExpression parses dice and addition correctly"() {
+        given:
+        String expression = "2d6 + 3"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        def expression = diceFactory.parseExpression("10")
-        def result = expression.evaluate(random)
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        expression instanceof Constant
-        ((Constant) expression).value == 10
-        result.part == expression
-        result.total == 10
-        result.results.isEmpty()
-        result.values.size() == 1
-        result.values.first == 10
+        result != null
+        result.getRepresentation() == "2d6 + 3"
+        result.evaluate(NOT_RANDOM) == 7
     }
 
-    def "parseExpression should throw IllegalArgumentException for invalid dice expression missing sides"() {
+    def "parseExpression parses nested parentheses correctly"() {
+        given:
+        String expression = "2 * (1d6 + 3)"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("3d")
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        result != null
+        result.getRepresentation() == "2 * (1d6 + 3)"
+        result.evaluate(NOT_RANDOM) == 2 * 5
     }
 
-    def "parseExpression should throw IllegalArgumentException for invalid dice expression missing count"() {
+    def "parseExpression parses complex expression correctly"() {
+        given:
+        String expression = "(2d6 + 3) * 2 - 4d8"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("d6")
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        result != null
+        result.getRepresentation() == "(2d6 + 3) * 2 - 4d8"
+        result.evaluate(NOT_RANDOM) == (7 * 2) - 8
     }
 
-    def "parseExpression should throw IllegalArgumentException for invalid dice expression"() {
+    def "parseExpression parses another complex expression correctly"() {
+        given:
+        String expression = "1d4 + 3d8 - (2d4 + 1) + (8 * 1d3)"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("adc")
+        def result = diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        result != null
+        result.getRepresentation() == "1d4 + 3d8 - (2d4 + 1) + (8 * 1d3)"
+        result.evaluate(NOT_RANDOM) == 2 + 6 - (4 + 1) + (8 * 2)
     }
 
-    def "parseExpression should throw IllegalArgumentException for invalid constant expression"() {
+    def "parseExpression throws exception for empty string"() {
+        given:
+        String expression = ""
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("abc")
+        diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
+        def ex = thrown(IllegalArgumentException)
+        ex.message == "Dice expression cannot be null or blank"
     }
 
-    def "parseExpression should correctly parse composite expression with addition operator"() {
+    def "parseExpression throws exception for null input"() {
+        given:
+        String expression = null
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        def result = diceFactory.parseExpression("4d6+5")
+        diceFactory.parseExpression(expression)
 
         then:
-        result instanceof DiceExpressionOperation
-        ((DiceExpressionOperation) result).operator == DiceExpressionOperator.ADD
-        ((DiceExpressionOperation) result).parts.first instanceof Dice
-        ((DiceExpressionOperation) result).parts.last instanceof Constant
-        result.evaluate(random).total == (8 + 5)
+        def ex = thrown(IllegalArgumentException)
+        ex.message == "Dice expression cannot be null or blank"
     }
 
-    def "parseExpression should correctly parse composite expression with subtraction operator"() {
+    def "parseExpression throws exception for unmatched parentheses"() {
+        given:
+        String expression = "(2d6 + 3"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        def result = diceFactory.parseExpression("6-2d5")
+        diceFactory.parseExpression(expression)
 
         then:
-        result instanceof DiceExpressionOperation
-        ((DiceExpressionOperation) result).operator == DiceExpressionOperator.SUBTRACT
-        ((DiceExpressionOperation) result).parts.first instanceof Constant
-        ((DiceExpressionOperation) result).parts.last instanceof Dice
-        result.evaluate(random).total == (6 - 4)
+        def ex = thrown(IllegalArgumentException)
+        ex.message == "Invalid dice expression, unmatched parenthesis"
     }
 
-    def "parseExpression should throw IllegalArgumentException for invalid composite expression missing right operand"() {
+    def "parseExpression throws exception for invalid token"() {
+        given:
+        String expression = "4 # 3"
+        DiceFactory diceFactory = new DiceFactory()
+
         when:
-        diceFactory.parseExpression("3d6-")
+        diceFactory.parseExpression(expression)
 
         then:
-        thrown(IllegalArgumentException)
-    }
-
-    def "parseExpression should throw IllegalArgumentException for invalid composite expression missing left operand"() {
-        when:
-        diceFactory.parseExpression("+5")
-
-        then:
-        thrown(IllegalArgumentException)
-    }
-
-    def "parseExpression should throw IllegalArgumentException for more than one operator"() {
-        when:
-        diceFactory.parseExpression("1+2d6-3")
-
-        then:
-        thrown(IllegalArgumentException)
+        def ex = thrown(IllegalArgumentException)
+        ex.message == "Invalid dice expression, invalid character: #"
     }
 }

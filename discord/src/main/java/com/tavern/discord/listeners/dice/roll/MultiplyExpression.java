@@ -1,6 +1,7 @@
 package com.tavern.discord.listeners.dice.roll;
 
 import com.tavern.utilities.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,13 +46,18 @@ final class MultiplyExpression implements DiceExpression {
             DiceExpression part = parts.get(i);
             if (i == 0) {
                 // No operator before first-part
-                sb.append(part);
+                sb.append(part.getRepresentation());
             } else {
                 sb.append(" * ");
                 sb.append(part.getRepresentation());
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getRepresentation();
     }
 
     static Builder builder() {

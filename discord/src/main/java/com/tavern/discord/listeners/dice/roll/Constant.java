@@ -1,5 +1,7 @@
 package com.tavern.discord.listeners.dice.roll;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Random;
 
 record Constant(int value) implements DiceExpressionValue {
@@ -23,5 +25,10 @@ record Constant(int value) implements DiceExpressionValue {
     @Override
     public String getRepresentation() {
         return "" + value;
+    }
+
+    @Override
+    public String toString() {
+        return getRepresentation();
     }
 }

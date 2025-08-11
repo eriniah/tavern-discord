@@ -147,14 +147,22 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
 
             if (!void.class.equals(commandMethod.getReturnType()) && null != ret) {
                 // Attempt to convert non-collection types with the type converter
-                MessageCreateData replyData = returnTypeConverter.convert(commandMethod.getReturnType(), MessageCreateData.class);
-                if (null != replyData) {
-                    event.reply(replyData).queue();
+                TypeConverter<?, MessageCreateData> converter = returnTypeConverter.get(commandMethod.getReturnType(), MessageCreateData.class);
+                if (null != converter) {
+                    MessageCreateData replyData = unsafeConvert(converter, ret);
+                    if (null != replyData) {
+                        event.reply(replyData).queue();
+                    }
                 }
             }
         } catch (InvocationTargetException | IllegalAccessException ex) {
             throw new IllegalStateException("Failed to invoke command method", ex);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <F, T> T unsafeConvert(TypeConverter<F, T> converter, Object value) {
+        return converter.convert((F) value);
     }
 
     private Injectables createContext(SlashCommandInteractionEvent event) {

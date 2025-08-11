@@ -1,5 +1,7 @@
 package com.tavern.discord.listeners.dice.roll;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,7 @@ record Dice(int count, int sides) implements DiceExpressionValue {
         List<Integer> rolls = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
-            rolls.add(random.nextInt(sides) + 1);
+            rolls.add(random.nextInt(1, sides + 1));
         }
 
         return rolls;
@@ -43,5 +45,10 @@ record Dice(int count, int sides) implements DiceExpressionValue {
     @Override
     public String getRepresentation() {
         return String.format("%dd%d", count, sides);
+    }
+
+    @Override
+    public String toString() {
+        return getRepresentation();
     }
 }

@@ -32,23 +32,23 @@ public class RollSlashCommandListener implements SlashCommandListener {
 
     @SlashCommandHandler
     public void handle(DiceRollCommand command) {
+        DiceExpression expression = diceFactory.dice(command.getCount(), command.getSides());
         event.reply(String.format("""
-        Rolled %dd%d": %d
-        """, command.getCount(), command.getSides(), diceFactory.dice(command.getCount(), command.getSides()).evaluate(RANDOM).getTotal()
+        %s = %d
+        """, expression.getRepresentation(), expression.evaluate(RANDOM)
         )).queue();
     }
 
     @SlashCommandHandler
-    public void handle(ExpressionRollCommand command) {
+    public String handle(ExpressionRollCommand command) {
         DiceExpression expression = diceFactory.parseExpression(command.getExpression());
-        DiceExpressionResult result = expression.evaluate(RANDOM);
-        event.reply(String.format("""
-        Rolling: %s
+        DiceExpression rolled = expression.roll(RANDOM);
+        int total = rolled.evaluate(RANDOM);
+        return """
+        Expression: %s
         Rolled: %s
         Total: %d
-        """, result.getResults()., result.getTotal()));
-        event.reply("" + diceFactory.parseExpression(command.getExpression()).evaluate(RANDOM).getTotal())
-            .queue();
+        """.formatted(expression, rolled, total);
     }
 
 }

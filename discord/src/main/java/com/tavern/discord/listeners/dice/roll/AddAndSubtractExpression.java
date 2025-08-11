@@ -1,6 +1,7 @@
 package com.tavern.discord.listeners.dice.roll;
 
 import com.tavern.utilities.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +60,11 @@ final class AddAndSubtractExpression implements DiceExpression {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getRepresentation();
     }
 
     static AddAndSubtractExpression add(List<DiceExpression> expressions) {
