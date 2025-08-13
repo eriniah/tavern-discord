@@ -2,20 +2,39 @@ package com.tavern.discord.listeners.dice.roll;
 
 import com.tavern.utilities.StringUtils;
 
-import java.util.regex.Pattern;
+import java.util.Stack;
 
 public class DiceFactory {
 
     public DiceExpression parseExpression(String expression) throws IllegalArgumentException {
         if (StringUtils.isNullOrBlank(expression)) {
             throw new IllegalArgumentException("Dice expression cannot be null or blank");
+        } else if (!matchingParenthesis(expression)) {
+            throw new IllegalArgumentException("Invalid dice expression, unmatched parenthesis");
         }
 
         DiceExpressionTokenizer tokenizer = new DiceExpressionTokenizer(expression);
-        return parseAddSub(tokenizer, false);
+        return parseAddSub(tokenizer);
     }
 
-    private DiceExpression parseAddSub(DiceExpressionTokenizer tokenizer, boolean isNested) {
+    private boolean matchingParenthesis(String expression) {
+        Stack<String> stack = new Stack<>();
+
+        for (char c : expression.toCharArray()) {
+            if (c == '(') {
+                stack.push("(");
+            } else if (c == ')') {
+                if (stack.empty()) {
+                    return false;
+                }
+                stack.pop();
+            }
+        }
+
+        return stack.empty();
+    }
+
+    private DiceExpression parseAddSub(DiceExpressionTokenizer tokenizer) {
         AddAndSubtractExpression.Builder addBuilder = AddAndSubtractExpression.builder();
 
         char operator = DiceExpressionTokenizer.Operator.ADD;
@@ -27,7 +46,7 @@ public class DiceFactory {
         } else if (DiceExpressionTokenizer.Token.DICE == token) {
             left = tokenizer.valueAsDice();
         } else if (DiceExpressionTokenizer.Token.PARENTHESIS_OPEN == token) {
-            left = new ParenthesisExpression(parseAddSub(tokenizer, true));
+            left = new ParenthesisExpression(parseAddSub(tokenizer));
         } else {
             throw new IllegalArgumentException("Invalid dice expression, must start with constant or dice token");
         }
@@ -37,16 +56,18 @@ public class DiceFactory {
             switch (token) {
                 case OPERATOR -> {
                     char newOperator = tokenizer.valueAsOperator();
-                    if (newOperator == DiceExpressionTokenizer.Operator.ADD) {
-                        addBuilder.add(left);
-                        left = null;
-                        operator = newOperator;
-                    } else if (newOperator == DiceExpressionTokenizer.Operator.SUBTRACT) {
-                        addBuilder.subtract(left);
-                        left = null;
-                        operator = newOperator;
-                    } else if (newOperator == DiceExpressionTokenizer.Operator.MULTIPLY) {
+                    if (newOperator == DiceExpressionTokenizer.Operator.MULTIPLY) {
                         left = parseMult(tokenizer, left);
+                    } else {
+                        if (operator == DiceExpressionTokenizer.Operator.ADD) {
+                            addBuilder.add(left);
+                        } else if (operator == DiceExpressionTokenizer.Operator.SUBTRACT) {
+                            addBuilder.subtract(left);
+                        } else {
+                            throw new IllegalArgumentException("Invalid dice expression, unexpected operator: " + operator);
+                        }
+                        left = null;
+                        operator = newOperator;
                     }
                 }
                 case CONSTANT -> {
@@ -65,15 +86,12 @@ public class DiceFactory {
                 }
                 case PARENTHESIS_OPEN -> {
                     if (null == left) {
-                        left = new ParenthesisExpression(parseAddSub(tokenizer, true));
+                        left = new ParenthesisExpression(parseAddSub(tokenizer));
                     } else {
                         throw new IllegalArgumentException("Invalid dice expression, unexpected open parenthesis");
                     }
                 }
                 case PARENTHESIS_CLOSE -> {
-                    if (!isNested) {
-                        throw new IllegalArgumentException("Invalid dice expression, unmatched parenthesis");
-                    }
                     if (null != left) {
                         if (DiceExpressionTokenizer.Operator.ADD == operator) {
                             addBuilder.add(left);
@@ -86,10 +104,6 @@ public class DiceFactory {
                 default -> throw new IllegalArgumentException("Invalid dice expression, unexpected token: " + token);
             }
         }
-
-//        if (isNested) {
-//            throw new IllegalArgumentException("Invalid dice expression, unmatched parenthesis");
-//        }
 
         if (null != left) {
             if (DiceExpressionTokenizer.Operator.ADD == operator) {
@@ -112,7 +126,7 @@ public class DiceFactory {
                 }
                 case CONSTANT -> multiplyBuilder.multiply(tokenizer.valueAsConstant());
                 case DICE -> multiplyBuilder.multiply(tokenizer.valueAsDice());
-                case PARENTHESIS_OPEN -> multiplyBuilder.multiply(new ParenthesisExpression(parseAddSub(tokenizer, true)));
+                case PARENTHESIS_OPEN -> multiplyBuilder.multiply(new ParenthesisExpression(parseAddSub(tokenizer)));
                 case PARENTHESIS_CLOSE -> multiplyBuilder.build();
                 default -> throw new IllegalArgumentException("Invalid dice expression, unexpected token: " + tokenizer.token());
             }

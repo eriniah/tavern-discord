@@ -1,12 +1,11 @@
 package com.tavern.discord.listeners.dice.roll;
 
 import com.tavern.utilities.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-final class AddAndSubtractExpression implements DiceExpression {
+public final class AddAndSubtractExpression implements DiceExpression {
     private static final char OP_ADD = '+';
     private static final char OP_SUBTRACT = '-';
 
@@ -48,15 +47,15 @@ final class AddAndSubtractExpression implements DiceExpression {
     }
 
     @Override
-    public String getRepresentation() {
+    public String getRepresentation(DiceExpressionValueFormatter formatter) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parts.size(); i++) {
             AddPart part = parts.get(i);
             if (i == 0) {
                 // No operator before first-part
-                sb.append(part.expression().getRepresentation());
+                sb.append(part.expression().getRepresentation(formatter));
             } else {
-                sb.append(" ").append(part.getRepresentation());
+                sb.append(" ").append(part.getRepresentation(formatter));
             }
         }
         return sb.toString();
@@ -64,7 +63,7 @@ final class AddAndSubtractExpression implements DiceExpression {
 
     @Override
     public String toString() {
-        return getRepresentation();
+        return getRepresentation(DiceExpressionValueFormatter.getDefault());
     }
 
     static AddAndSubtractExpression add(List<DiceExpression> expressions) {
@@ -98,8 +97,8 @@ final class AddAndSubtractExpression implements DiceExpression {
     }
 
     private record AddPart(char operator, DiceExpression expression) {
-        String getRepresentation() {
-            return String.format("%s %s", operator, expression.getRepresentation());
+        String getRepresentation(DiceExpressionValueFormatter formatter) {
+            return String.format("%s %s", operator, expression.getRepresentation(formatter));
         }
 
         AddPart roll(Random random) {

@@ -1,11 +1,11 @@
 package com.tavern.discord.layer;
 
-import com.tavern.discord.layer.annotations.Context;
-import com.tavern.discord.layer.annotations.Inject;
+import com.tavern.discord.layer.annotations.*;
 import com.tavern.discord.layer.command.CommandId;
 import com.tavern.discord.layer.command.slash.*;
 import com.tavern.discord.layer.command.slash.annotations.*;
 import com.tavern.domain.model.discord.GuildId;
+import com.tavern.utilities.StringUtils;
 import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -123,6 +123,7 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
                     && Arrays.stream(method.getParameterTypes())
                         .anyMatch(paramType -> paramType.equals(commandClass));
             }).findFirst().orElseThrow(() -> new IllegalStateException("Failed to locate command method for " + commandId));
+        SlashCommandHandler commandHandler = commandMethod.getAnnotation(SlashCommandHandler.class);
 
         // Build method parameters
         Object[] commandParameters = Arrays.stream(commandMethod.getParameters())
@@ -155,8 +156,21 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
                     }
                 }
             }
-        } catch (InvocationTargetException | IllegalAccessException ex) {
+        } catch (IllegalAccessException ex) {
             throw new IllegalStateException("Failed to invoke command method", ex);
+        } catch (InvocationTargetException ex) {
+            Throwable cause = ex.getCause();
+            for (ErrorResponse errorResponse: commandHandler.errorResponses()) {
+                if (errorResponse.value().isAssignableFrom(cause.getClass())) {
+                    if (StringUtils.isNullOrBlank(errorResponse.message())) {
+                        event.reply(cause.getMessage()).setEphemeral(true).queue();
+                    } else {
+                        event.reply(errorResponse.message()).setEphemeral(true).queue();
+                    }
+                    return;
+                }
+            }
+            logger.error("Failed to execute command", ex);
         }
     }
 

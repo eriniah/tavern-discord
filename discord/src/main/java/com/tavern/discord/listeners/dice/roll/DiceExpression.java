@@ -18,7 +18,8 @@ public interface DiceExpression {
     int evaluate(Random random);
     /**
      * Get the expression as a string
+     * @param formatter Formatter to use for formatting values
      * @return The string expression representation
      */
-    String getRepresentation();
+    String getRepresentation(DiceExpressionValueFormatter formatter);
 }
