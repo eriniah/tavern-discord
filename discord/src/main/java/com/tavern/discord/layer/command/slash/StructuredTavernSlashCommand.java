@@ -2,12 +2,10 @@ package com.tavern.discord.layer.command.slash;
 
 import com.tavern.discord.layer.command.CommandId;
 import com.tavern.utilities.CollectionUtils;
+import jakarta.annotation.Nullable;
 import net.dv8tion.jda.api.interactions.commands.build.*;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Discord commands that have no 'base command' but are instead made up of sub commands and/or subgroups
@@ -23,14 +21,16 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
     // subcommand name -> subcommand
     private final Map<String, TavernSubCommand> subCommands;
     // Subgroup name -> subgroup
-    private final Map<String, TavernCommandSubgroup> subgroups;
+    private final Map<String, TavernCommandSubgroup> subGroups;
     private final Map<CommandId, Class<?>> commandToDataClass;
 
-    StructuredTavernSlashCommand(SlashCommandData slashCommand, Map<String, TavernSubCommand> subCommands, Map<String, TavernCommandSubgroup> subgroups) {
+    StructuredTavernSlashCommand(SlashCommandData slashCommand, Map<String, TavernSubCommand> subCommands, Map<String, TavernCommandSubgroup> subGroups) {
         this.slashCommand = slashCommand;
         this.subCommands = CollectionUtils.wrapIfPresent(subCommands, HashMap::new);
-        this.subgroups = CollectionUtils.wrapIfPresent(subgroups, HashMap::new);
+        this.subGroups = CollectionUtils.wrapIfPresent(subGroups, HashMap::new);
 
+        // Note: Important that we use a Map implementation that supports null values. Commands without a command class
+        // need to pass a containsKey() check
         this.commandToDataClass = new HashMap<>();
         subCommands.forEach((name, command) -> {
             commandToDataClass.put(
@@ -38,7 +38,7 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
                 command.getCommandClass()
             );
         });
-        subgroups.forEach((subGroupName, subGroup) -> {
+        subGroups.forEach((subGroupName, subGroup) -> {
             subGroup.getSubCommands().forEach((name, command) -> {
                 commandToDataClass.put(
                     new CommandId(slashCommand.getName(), subGroupName, name),
@@ -81,6 +81,11 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
         return commandToDataClass.get(commandId);
     }
 
+    @Override
+    public boolean isValid(CommandId commandId) {
+        return commandToDataClass.containsKey(commandId);
+    }
+
     /**
      * Unmodifiable map of subcommands
      * @return sub commands
@@ -93,39 +98,41 @@ public final class StructuredTavernSlashCommand implements TavernSlashCommand {
      * Unmodifiable map of subgroups
      * @return subgroups
      */
-    public Map<String, TavernCommandSubgroup> getSubgroups() {
-        return Collections.unmodifiableMap(subgroups);
+    public Map<String, TavernCommandSubgroup> getSubGroups() {
+        return Collections.unmodifiableMap(subGroups);
     }
 
     public static final class TavernSubCommand {
-        private final SubcommandData subcommandData;
+        private final SubcommandData subCommandData;
+        @Nullable
         private final Class<?> commandClass;
 
-        TavernSubCommand(SubcommandData subcommandData, Class<?> commandClass) {
-            this.subcommandData = subcommandData;
+        TavernSubCommand(SubcommandData subCommandData, Class<?> commandClass) {
+            this.subCommandData = subCommandData;
             this.commandClass = commandClass;
         }
 
-        public SubcommandData getSubcommandData() {
-            return subcommandData;
+        public SubcommandData getSubCommandData() {
+            return subCommandData;
         }
 
+        @Nullable
         public Class<?> getCommandClass() {
             return commandClass;
         }
     }
 
     public static final class TavernCommandSubgroup {
-        private final SubcommandGroupData subcommandGroupData;
+        private final SubcommandGroupData subCommandGroupData;
         private final Map<String, TavernSubCommand> subCommands;
 
-        TavernCommandSubgroup(SubcommandGroupData subcommandGroupData, Map<String, TavernSubCommand> subCommands) {
-            this.subcommandGroupData = subcommandGroupData;
+        TavernCommandSubgroup(SubcommandGroupData subCommandGroupData, Map<String, TavernSubCommand> subCommands) {
+            this.subCommandGroupData = subCommandGroupData;
             this.subCommands = CollectionUtils.wrapIfPresent(subCommands, HashMap::new);
         }
 
-        public SubcommandGroupData getSubcommandGroupData() {
-            return subcommandGroupData;
+        public SubcommandGroupData getSubCommandGroupData() {
+            return subCommandGroupData;
         }
 
         public Map<String, TavernSubCommand> getSubCommands() {

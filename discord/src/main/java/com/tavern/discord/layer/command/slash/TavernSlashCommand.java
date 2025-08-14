@@ -10,4 +10,5 @@ public sealed interface TavernSlashCommand permits SimpleTavernSlashCommand, Str
     void visit(TavernSlashCommandVisitor visitor);
     @Nullable
     Class<?> getCommandClass(CommandId commandId);
+    boolean isValid(CommandId commandId);
 }

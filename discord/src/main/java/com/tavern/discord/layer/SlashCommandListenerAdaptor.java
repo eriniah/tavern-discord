@@ -7,6 +7,7 @@ import com.tavern.discord.layer.command.slash.annotations.*;
 import com.tavern.domain.model.discord.GuildId;
 import com.tavern.utilities.StringUtils;
 import com.tavern.utilities.convert.*;
+import jakarta.annotation.Nullable;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -68,8 +69,7 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
             return;
         }
 
-        Class<?> commandClass = command.getCommandClass(commandId);
-        if (null == commandClass) {
+        if (!command.isValid(commandId)) {
             logger.trace("No command class for command: {}", commandId);
             event.reply(String.format("Unknown command '%s'", commandId))
                 .setEphemeral(true)
@@ -113,16 +113,29 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
             }
         }
 
-        Object commandInstance = createCommandInstance(event, commandClass);
+        final Class<?> commandClass = command.getCommandClass(commandId);
+        final Object commandInstance = null != commandClass ? createCommandInstance(event, commandClass) : null;
 
-        // Locate command method
+        // First look for command specifiers, then matching command class
         Method commandMethod = Arrays.stream(listener.getClass().getMethods())
             .filter(method -> {
                 SlashCommandHandler handler = method.getAnnotation(SlashCommandHandler.class);
                 return null != handler
-                    && Arrays.stream(method.getParameterTypes())
-                        .anyMatch(paramType -> paramType.equals(commandClass));
-            }).findFirst().orElseThrow(() -> new IllegalStateException("Failed to locate command method for " + commandId));
+                    && commandId.equals(new CommandId(
+                    handler.command(),
+                    handler.subCommandGroup().isBlank() ? null : handler.subCommandGroup(),
+                    handler.subCommand().isBlank() ? null : handler.subCommand()
+                ));
+            }).findFirst().orElse(null);
+        // If still null, attempt to match by command class
+        if (null == commandMethod) {
+            commandMethod = Arrays.stream(listener.getClass().getMethods())
+                .filter(method -> {
+                    SlashCommandHandler handler = method.getAnnotation(SlashCommandHandler.class);
+                    return null != handler
+                        && Arrays.asList(method.getParameterTypes()).contains(commandClass);
+                }).findFirst().orElseThrow(() -> new IllegalStateException("Failed to locate command method for " + commandId));
+        }
         SlashCommandHandler commandHandler = commandMethod.getAnnotation(SlashCommandHandler.class);
 
         // Build method parameters
@@ -135,7 +148,7 @@ class SlashCommandListenerAdaptor extends ListenerAdapter {
                     return injectables.get(parameter.getType());
                 } else if (null != context) {
                     return contextuals.get(parameter.getType());
-                } else if (commandClass.equals(parameter.getType())) {
+                } else if (Objects.equals(commandClass, parameter.getType())) {
                     return commandInstance;
                 } else {
                     logger.trace("Unknown mapping for parameter type '{}'", parameter.getType().getSimpleName());

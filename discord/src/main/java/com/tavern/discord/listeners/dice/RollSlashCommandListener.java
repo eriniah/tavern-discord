@@ -17,6 +17,7 @@ import static com.tavern.discord.DiscordColoredTextFactory.Ansi.lightBlue;
 
 public class RollSlashCommandListener implements SlashCommandListener {
     private static final XLogger logger = XLoggerFactory.getXLogger(RollSlashCommandListener.class);
+
     private static final Random RANDOM = new Random(Instant.now().toEpochMilli());
 
     @Inject
@@ -36,11 +37,11 @@ public class RollSlashCommandListener implements SlashCommandListener {
     @SlashCommandHandler(errorResponses = {
         @ErrorResponse(IllegalArgumentException.class)
     })
-    public MessageCreateData handle(DiceRollCommand command) {
+    public void handle(DiceRollCommand command) {
         DiceExpression expression = diceFactory.dice(command.getCount(), command.getSides());
         DiceExpression rolled = expression.roll(RANDOM);
         int total = rolled.evaluate(RANDOM);
-        return createMessage(expression, rolled, total);
+        event.reply(createMessage(expression, rolled, total)).setEphemeral(command.isHidden()).queue();
     }
 
     @SlashCommandHandler(errorResponses = {

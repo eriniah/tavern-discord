@@ -1,6 +1,7 @@
 package com.tavern.discord.listeners.dice;
 
 import com.tavern.discord.layer.command.slash.annotations.*;
+import jakarta.annotation.Nullable;
 
 @SlashCommand(name = "expression", description = "Custom roll expression similar to roll20")
 public class ExpressionRollCommand {
@@ -17,7 +18,7 @@ public class ExpressionRollCommand {
         @SlashCommandOption(
             name = "hidden",
             description = "Hide this dice roll from other users"
-        ) Boolean hidden
+        ) @Nullable Boolean hidden
     ) {
         this.expression = expression;
         this.hidden = null != hidden && hidden;

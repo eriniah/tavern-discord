@@ -3,7 +3,10 @@ package com.tavern.discord.layer;
 import com.tavern.discord.layer.command.CommandId;
 import com.tavern.discord.layer.command.slash.*;
 import jakarta.annotation.Nullable;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
@@ -11,6 +14,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 final class TavernSlashCommandCache {
+    private static final XLogger logger = XLoggerFactory.getXLogger(TavernSlashCommandCache.class);
+    
     private final Map<String, CachedCommandHandler> nameToSlashCommand;
     private final TavernSlashCommandFactory factory;
 
@@ -49,6 +54,17 @@ final class TavernSlashCommandCache {
             return null;
         }
         return nameToSlashCommand.get(commandId.command()).createListener();
+    }
+
+    void postCommands(JDA jda) {
+        jda.updateCommands().addCommands(
+            nameToSlashCommand.values().stream()
+                .map(c -> c.command.getSlashCommand())
+                .collect(Collectors.toList())
+        ).queue(
+            commands -> logger.info("Updated discord slash commands: {}", commands.stream().map(Command::getName).collect(Collectors.joining(", "))),
+            ex -> logger.error("Failed to update discord slash commands", ex)
+        );
     }
 
     static class CachedCommandHandler {

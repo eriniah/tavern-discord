@@ -16,14 +16,19 @@ public final class TavernSlashCommandFactory {
     private final Map<Class<?>, OptionType> mapToOptionType;
 
     public TavernSlashCommandFactory() {
-        // TODO: Switch to accepting custom Codec/Mappers. Put this stuff in default
         this.mapToOptionType = Map.ofEntries(
             Map.entry(String.class, OptionType.STRING),
+            Map.entry(Integer.TYPE, OptionType.INTEGER),
             Map.entry(Integer.class, OptionType.INTEGER),
+            Map.entry(Long.TYPE, OptionType.INTEGER),
             Map.entry(Long.class, OptionType.INTEGER),
+            Map.entry(Boolean.TYPE, OptionType.BOOLEAN),
             Map.entry(Boolean.class, OptionType.BOOLEAN),
+            Map.entry(Double.TYPE, OptionType.NUMBER),
             Map.entry(Double.class, OptionType.NUMBER),
+            Map.entry(Float.TYPE, OptionType.NUMBER),
             Map.entry(Float.class, OptionType.NUMBER),
+            Map.entry(Short.TYPE, OptionType.INTEGER),
             Map.entry(Short.class, OptionType.INTEGER),
             Map.entry(Message.Attachment.class, OptionType.ATTACHMENT),
             Map.entry(Channel.class, OptionType.CHANNEL),
@@ -31,6 +36,10 @@ public final class TavernSlashCommandFactory {
             Map.entry(Role.class, OptionType.ROLE),
             Map.entry(User.class, OptionType.USER)
         );
+    }
+
+    public TavernSlashCommand simpleNoOptions(String name, String description) {
+        return new SimpleTavernSlashCommand(Commands.slash(name, description));
     }
 
     public TavernSlashCommand simple(Class<?> commandClass) {
@@ -123,6 +132,7 @@ public final class TavernSlashCommandFactory {
 
         public TavernSlashCommandBuilder addSubCommand(Class<?> commandClass, Consumer<SubcommandData> configure) {
             SubcommandData command = getSubCommand(commandClass);
+            command.addOptions(getCommandOptions(commandClass));
             configure.accept(command);
             subCommands.put(command.getName(), new StructuredTavernSlashCommand.TavernSubCommand(command, commandClass));
             return this;
@@ -141,6 +151,20 @@ public final class TavernSlashCommandFactory {
 
         public TavernSlashCommand build(Consumer<SlashCommandData> configure) {
             configure.accept(command);
+            if (!subCommands.isEmpty()) {
+                command.addSubcommands(
+                    subCommands.values().stream()
+                        .map(StructuredTavernSlashCommand.TavernSubCommand::getSubCommandData)
+                        .collect(Collectors.toList())
+                );
+            }
+            if (!subgroupCommands.isEmpty()) {
+                command.addSubcommandGroups(
+                    subgroupCommands.values().stream()
+                        .map(StructuredTavernSlashCommand.TavernCommandSubgroup::getSubCommandGroupData)
+                        .collect(Collectors.toList())
+                );
+            }
             return new StructuredTavernSlashCommand(command, subCommands, subgroupCommands);
         }
     }
@@ -161,6 +185,7 @@ public final class TavernSlashCommandFactory {
 
         public SubcommandGroupBuilder addSubCommand(Class<?> commandClass, Consumer<SubcommandData> configure) {
             SubcommandData command = getSubCommand(commandClass);
+            command.addOptions(getCommandOptions(commandClass));
             configure.accept(command);
             subCommands.put(command.getName(), new StructuredTavernSlashCommand.TavernSubCommand(command, commandClass));
             return this;
@@ -173,6 +198,11 @@ public final class TavernSlashCommandFactory {
         StructuredTavernSlashCommand.TavernCommandSubgroup build(Consumer<SubcommandGroupData> configure) {
             SubcommandGroupData subcommandGroupData = new SubcommandGroupData(name, description);
             configure.accept(subcommandGroupData);
+            subcommandGroupData.addSubcommands(
+                subCommands.values().stream()
+                    .map(StructuredTavernSlashCommand.TavernSubCommand::getSubCommandData)
+                    .collect(Collectors.toList())
+            );
             return new StructuredTavernSlashCommand.TavernCommandSubgroup(subcommandGroupData, subCommands);
         }
 

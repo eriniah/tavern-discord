@@ -6,6 +6,7 @@ import com.tavern.discord.layer.Injectables;
 import com.tavern.discord.layer.TavernDiscordClient;
 import com.tavern.discord.listeners.dice.RollSlashCommandListener;
 import com.tavern.discord.listeners.dice.roll.DiceFactory;
+import com.tavern.discord.listeners.drink.DrinkCommandListener;
 import com.tavern.domain.model.*;
 import joptsimple.*;
 import org.slf4j.ext.XLogger;
@@ -66,7 +67,8 @@ public class App {
                 }
             })
             .listeners(Arrays.asList(
-                RollSlashCommandListener.class
+                RollSlashCommandListener.class,
+                DrinkCommandListener.class
             ))
             .build();
 

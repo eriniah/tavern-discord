@@ -15,7 +15,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "5"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "5"
         result.evaluate(NOT_RANDOM) == 5
     }
 
@@ -29,7 +29,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "1d6"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "1d6"
         result.evaluate(NOT_RANDOM) == 2
     }
 
@@ -43,7 +43,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "4 + 2"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "4 + 2"
         result.evaluate(NOT_RANDOM) == 6
     }
 
@@ -57,7 +57,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "9 - 3"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "9 - 3"
         result.evaluate(NOT_RANDOM) == 6
     }
 
@@ -71,7 +71,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "2d6 + 3"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "2d6 + 3"
         result.evaluate(NOT_RANDOM) == 7
     }
 
@@ -85,7 +85,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "2 * (1d6 + 3)"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "2 * (1d6 + 3)"
         result.evaluate(NOT_RANDOM) == 2 * 5
     }
 
@@ -99,7 +99,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "(2d6 + 3) * 2 - 4d8"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "(2d6 + 3) * 2 - 4d8"
         result.evaluate(NOT_RANDOM) == (7 * 2) - 8
     }
 
@@ -113,7 +113,7 @@ class DiceFactoryTest extends Specification {
 
         then:
         result != null
-        result.getRepresentation() == "1d4 + 3d8 - (2d4 + 1) + (8 * 1d3)"
+        result.getRepresentation(DiceExpressionValueFormatter.getDefault()) == "1d4 + 3d8 - (2d4 + 1) + (8 * 1d3)"
         result.evaluate(NOT_RANDOM) == 2 + 6 - (4 + 1) + (8 * 2)
     }
 

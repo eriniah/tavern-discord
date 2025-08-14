@@ -2,15 +2,20 @@ package com.tavern.discord.layer.command.slash;
 
 import com.tavern.discord.layer.command.CommandId;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import org.jetbrains.annotations.Nullable;
+import jakarta.annotation.Nullable;
 
 import java.util.Objects;
 
 public final class SimpleTavernSlashCommand implements TavernSlashCommand {
     private final SlashCommandData slashCommand;
+    @Nullable
     private final Class<?> commandClass;
 
-    SimpleTavernSlashCommand(SlashCommandData slashCommand, Class<?> commandClass) {
+    SimpleTavernSlashCommand(SlashCommandData slashCommand) {
+        this(slashCommand, null);
+    }
+
+    SimpleTavernSlashCommand(SlashCommandData slashCommand, @Nullable Class<?> commandClass) {
         this.slashCommand = slashCommand;
         this.commandClass = commandClass;
     }
@@ -45,16 +50,22 @@ public final class SimpleTavernSlashCommand implements TavernSlashCommand {
     @Nullable
     @Override
     public Class<?> getCommandClass(CommandId commandId) {
-        if (getCommandId().equals(commandId)) {
+        if (isValid(commandId)) {
             return getCommandClass();
         }
         return null;
+    }
+
+    @Override
+    public boolean isValid(CommandId commandId) {
+        return getCommandId().equals(commandId);
     }
 
     public CommandId getCommandId() {
         return new CommandId(slashCommand.getName(), null, null);
     }
 
+    @Nullable
     public Class<?> getCommandClass() {
         return commandClass;
     }

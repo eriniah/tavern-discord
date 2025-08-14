@@ -3,7 +3,7 @@ spring = '5.3.39'
 google-guava = '33.4.8-jre'
 jakarta-annotations = '3.0.0'
 
-discordJda = '5.0.0-beta.22'
+discordJda = '5.6.1'
 # Snapshot version for most recent youtube API fix
 # lavaplayer = 'afec211f05c9dcf0b6ee44276a02f0316ea2458a-SNAPSHOT'
 lavaplayer = '2.2.2'

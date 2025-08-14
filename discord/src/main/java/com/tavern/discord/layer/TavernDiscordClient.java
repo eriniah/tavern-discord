@@ -29,8 +29,6 @@ public final class TavernDiscordClient implements AutoCloseable {
         this.defaultCommandPrefix = builder.defaultCommandPrefix;
         this.injectables = Objects.requireNonNullElseGet(builder.injectables, () -> new Injectables.Builder().build());
 
-        this.slashCommandCache = new TavernSlashCommandCache(new TavernSlashCommandFactory(), builder.slashCommandListeners);
-
         // Internal type conversions
         TypeConverterRegistry typeConverter = TypeConverterRegistries.ofRegistries(
             TypeConverterRegistries.ofConvertersBuilder()
@@ -60,6 +58,8 @@ public final class TavernDiscordClient implements AutoCloseable {
         }
         this.typeConverter = typeConverter;
 
+        this.slashCommandCache = new TavernSlashCommandCache(new TavernSlashCommandFactory(), builder.slashCommandListeners);
+
         jda = JDABuilder
             .create(builder.token, Arrays.asList(
                 SCHEDULED_EVENTS,
@@ -83,6 +83,7 @@ public final class TavernDiscordClient implements AutoCloseable {
 
         JDA.Status status = jda.getStatus();
         if (JDA.Status.CONNECTED == status) {
+            this.slashCommandCache.postCommands(jda);
             return true;
         } else {
             logger.error("Failed to connect to Discord API. Status: {}", status);
