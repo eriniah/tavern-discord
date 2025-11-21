@@ -1,5 +1,5 @@
 [versions]
-spring = '5.3.39'
+spring = '6.2.9'
 google-guava = '33.4.8-jre'
 jakarta-annotations = '3.0.0'
 
@@ -8,6 +8,8 @@ discordJda = '5.6.1'
 # lavaplayer = 'afec211f05c9dcf0b6ee44276a02f0316ea2458a-SNAPSHOT'
 lavaplayer = '2.2.2'
 lavaplayer-youtube = '1.12.0'
+
+mongodb = '5.5.1'
 
 jackson = '2.19.2'
 joptSimple = '5.0.4'
@@ -24,6 +26,7 @@ objenesis = '3.1'
 
 [libraries]
 # Spring
+spring-bom = { module = 'org.springframework:spring-bom', version.ref = 'spring' }
 spring-core = { module = 'org.springframework:spring-core', version.ref = 'spring' }
 spring-context = { module = 'org.springframework:spring-context', version.ref = 'spring' }
 spring-beans = { module = 'org.springframework:spring-beans', version.ref = 'spring' }
@@ -37,11 +40,14 @@ discordJda = { module = 'net.dv8tion:JDA', version.ref = 'discordJda' }
 
 # Lavaplayer for music streaming
 lavaplayer = { module = 'dev.arbjerg:lavaplayer', version.ref = 'lavaplayer' }
-
 # lavalink youtube-source v2 rewritten source manager for lavaplayer
 lavaplayer-youtube = { module = 'dev.lavalink.youtube:v2', version.ref = 'lavaplayer-youtube' }
 
+# Mongo
+mongodb-bom = { module = 'org.mongodb:mongodb-driver-bom', version.ref = 'mongodb' }
+
 # JSON
+jackson-bom = { module = 'com.fasterxml.jackson.core:jackson-bom', version.ref = 'jackson' }
 jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core', version.ref = 'jackson' }
 jackson-databind = { module = 'com.fasterxml.jackson.core:jackson-databind', version.ref = 'jackson' }
 jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations', version.ref = 'jackson' }

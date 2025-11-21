@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation platform(project(':platform'))
     implementation libs.bundles.core
 
     testImplementation libs.bundles.spock

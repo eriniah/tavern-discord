@@ -6,7 +6,7 @@ import com.tavern.discord.layer.Injectables;
 import com.tavern.discord.layer.TavernDiscordClient;
 import com.tavern.discord.listeners.dice.RollSlashCommandListener;
 import com.tavern.discord.listeners.dice.roll.DiceFactory;
-import com.tavern.discord.listeners.drink.DrinkCommandListener;
+import com.tavern.discord.listeners.drink.*;
 import com.tavern.domain.model.*;
 import joptsimple.*;
 import org.slf4j.ext.XLogger;
@@ -47,11 +47,15 @@ public class App {
 			throw new IllegalStateException(String.format("Failed to read configuration file at '%s'", configSpec.value(args)), ex);
 		}
 
+
         logger.info("Initializing application context");
         GenericApplicationContext applicationContext = new GenericApplicationContext();
         applicationContext.registerBean(TavernMetadata.class, () -> new TavernMetadata(System.getProperty("tavern.version")));
         applicationContext.registerBean(TavernConfig.class, () -> config);
         applicationContext.registerBean(DiceFactory.class, DiceFactory::new);
+
+        DrinkPointCache cache = new DrinkPointCache();
+        applicationContext.registerBean(DrinkPointCache.class, () -> cache);
 
         logger.debug("Refreshing and starting application context");
         applicationContext.refresh();
@@ -68,7 +72,9 @@ public class App {
             })
             .listeners(Arrays.asList(
                 RollSlashCommandListener.class,
-                DrinkCommandListener.class
+                DrinkCommandListener.class,
+                PopPopCommandListener.class,
+                DrinkPointCommandListener.class
             ))
             .build();
 

@@ -1,0 +1,21 @@
+
+plugins {
+    id 'java-platform'
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
+
+dependencies {
+
+    constraints {
+
+    }
+
+    // Require dependencies on core dependency boms
+    // api platform(libs.jackson.bom)
+    // api platform(libs.mongodb.bom)
+    // api platform(libs.spring.bom)
+}

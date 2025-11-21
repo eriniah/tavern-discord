@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation platform(project(':platform'))
     implementation project(':domain')
     implementation project(':utilities')
 

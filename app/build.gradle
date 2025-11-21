@@ -12,6 +12,7 @@ version = '1.0.0'
 description = 'Tavern discord integration'
 
 dependencies {
+    implementation platform(project(':platform'))
     implementation project(':utilities')
     implementation project(':discord')
     implementation project(':domain')

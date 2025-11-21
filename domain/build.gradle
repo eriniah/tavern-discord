@@ -4,13 +4,9 @@ plugins {
 }
 
 dependencies {
+    implementation platform(project(':platform'))
     implementation project(':utilities')
     implementation 'org.json:json:20231013'
 
     implementation libs.bundles.core
-
-    // TODO: EMM Remove below from domain
-    implementation libs.lavaplayer
-    implementation libs.lavaplayer.youtube
-    implementation libs.discordJda
 }
