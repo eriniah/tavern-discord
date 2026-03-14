@@ -6,8 +6,9 @@ import com.tavern.domain.model.audio.AudioService;
 import com.tavern.domain.model.command.*;
 import com.tavern.domain.model.discord.GuildId;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -78,11 +79,11 @@ public class NowPlayingCommandHandler implements CommandHandler {
 			eb.setColor(0x5865F2); // blurple UwU
 
 			event.getChannel().sendMessageEmbeds(eb.build())
-				.setActionRow(
+				.setComponents(ActionRow.of(
 					Button.primary("skip", "Skip"),
 					Button.primary("shuffle", "Shuffle"),
 					Button.primary("pause", "Play/Pause")
-				)
+				))
 				.queue();
 		}
 

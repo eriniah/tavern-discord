@@ -44,7 +44,9 @@ distributions {
 jar {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
     manifest {
-        attributes 'Main-Class': application.mainClass
+        attributes  'Main-Class': application.mainClass,
+                    // jDave https://github.com/MinnDevelopment/jdave?tab=readme-ov-file#restricted-methods-warning
+                    'Enable-Native-Access': 'ALL-UNNAMED'
     }
     archiveBaseName = 'tavern'
 

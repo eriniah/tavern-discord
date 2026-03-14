@@ -5,10 +5,10 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import kotlin.ranges.IntRange;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -233,7 +233,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		eb.setColor(0x5865F2);// blurple UwU
 
 		textChannel.sendMessageEmbeds(eb.build())
-			.setActionRow(Button.primary("skip", "Skip"), Button.primary("shuffle", "Shuffle"), Button.primary("pause", "Play/Pause"))
+            .setComponents(ActionRow.of(Button.primary("skip", "Skip"), Button.primary("shuffle", "Shuffle"), Button.primary("pause", "Play/Pause")))
 			.queue();
 	}
 

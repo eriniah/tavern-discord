@@ -88,7 +88,7 @@ public class DiscordListener extends ListenerAdapter {
 
 	@Override
 	public void onButtonInteraction(@Nonnull final ButtonInteractionEvent event) {
-		String message = event.getButton().getId();
+		String message = event.getButton().getCustomId();
 		final CommandMessage result = parser.parse(parser.getPrefix() + message);
 		event.deferEdit().queue();
 

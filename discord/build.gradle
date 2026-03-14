@@ -8,7 +8,11 @@ dependencies {
     implementation project(':utilities')
 
     implementation libs.bundles.core
+
     implementation libs.discordJda
+    implementation libs.jdave.api
+    implementation libs.jdave.natives.linux.x86x64
+    implementation libs.jdave.natives.windows.x86x64
 
     testImplementation libs.bundles.spock
 }
