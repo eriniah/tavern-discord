@@ -6,6 +6,9 @@ import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -47,6 +50,18 @@ public final class TavernDiscordClient implements AutoCloseable {
                 .add(TypeConverter.of(OptionMapping.class, IMentionable.class, OptionMapping::getAsMentionable))
                 .add(TypeConverter.of(OptionMapping.class, Role.class, OptionMapping::getAsRole))
                 .add(TypeConverter.of(OptionMapping.class, User.class, OptionMapping::getAsUser))
+                .add(TypeConverter.of(OptionMapping.class, TextChannel.class, option -> {
+                    if (option.getChannelType() != ChannelType.TEXT) {
+                        throw new RuntimeException("Channel " + option.getAsChannel().getAsMention() + " is not a text channel");
+                    }
+                    return option.getAsChannel().asTextChannel();
+                }))
+                .add(TypeConverter.of(OptionMapping.class, VoiceChannel.class, option -> {
+                    if (option.getChannelType() != ChannelType.VOICE) {
+                        throw new RuntimeException("Channel " + option.getAsChannel().getAsMention() + " is not a voice channel");
+                    }
+                    return option.getAsChannel().asVoiceChannel();
+                }))
                 .build(),
             TypeConverterRegistries.defaultRegistry()
         );

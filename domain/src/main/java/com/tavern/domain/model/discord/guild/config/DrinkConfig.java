@@ -1,9 +1,11 @@
 package com.tavern.domain.model.discord.guild.config;
 
+import com.tavern.domain.model.discord.ChannelId;
 import com.tavern.domain.model.discord.Role;
 
 public final class DrinkConfig {
     private Role role;
+    private ChannelId campaignChannelId;
 
     @Override
     public String toString() {
@@ -18,5 +20,13 @@ public final class DrinkConfig {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public ChannelId getCampaignChannelId() {
+        return campaignChannelId;
+    }
+
+    public void setCampaignChannelId(ChannelId campaignChannelId) {
+        this.campaignChannelId = campaignChannelId;
     }
 }

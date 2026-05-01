@@ -3,6 +3,8 @@ package com.tavern.discord.layer.command.slash;
 import com.tavern.discord.layer.command.slash.annotations.*;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
 
@@ -32,6 +34,8 @@ public final class TavernSlashCommandFactory {
             Map.entry(Short.class, OptionType.INTEGER),
             Map.entry(Message.Attachment.class, OptionType.ATTACHMENT),
             Map.entry(Channel.class, OptionType.CHANNEL),
+            Map.entry(TextChannel.class, OptionType.CHANNEL),
+            Map.entry(VoiceChannel.class, OptionType.CHANNEL),
             Map.entry(IMentionable.class, OptionType.MENTIONABLE),
             Map.entry(Role.class, OptionType.ROLE),
             Map.entry(User.class, OptionType.USER)
@@ -126,6 +130,11 @@ public final class TavernSlashCommandFactory {
             this.command = Commands.slash(name, description);
         }
 
+        public TavernSlashCommandBuilder addSimpleSubCommand(String name, String description) {
+            subCommands.put(name, new StructuredTavernSlashCommand.TavernSubCommand(new SubcommandData(name, description), null));
+            return this;
+        }
+
         public TavernSlashCommandBuilder addSubCommand(Class<?> commandClass) {
             return addSubCommand(commandClass, __ -> {});
         }
@@ -177,6 +186,11 @@ public final class TavernSlashCommandFactory {
         public SubcommandGroupBuilder(String name, String description) {
             this.name = name;
             this.description = description;
+        }
+
+        public SubcommandGroupBuilder addSimpleSubCommand(String name, String description) {
+            subCommands.put(name, new StructuredTavernSlashCommand.TavernSubCommand(new SubcommandData(name, description), null));
+            return this;
         }
 
         public SubcommandGroupBuilder addSubCommand(Class<?> commandClass) {

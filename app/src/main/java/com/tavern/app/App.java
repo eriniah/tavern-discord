@@ -7,7 +7,10 @@ import com.tavern.discord.layer.TavernDiscordClient;
 import com.tavern.discord.listeners.dice.RollSlashCommandListener;
 import com.tavern.discord.listeners.dice.roll.DiceFactory;
 import com.tavern.discord.listeners.drink.*;
+import com.tavern.discord.listeners.drink.quest.CampaignConfigListener;
 import com.tavern.domain.model.*;
+import com.tavern.domain.model.discord.guild.config.GuildConfigRepository;
+import com.tavern.repository.mem.GuildConfigMemRepository;
 import joptsimple.*;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -53,6 +56,7 @@ public class App {
         applicationContext.registerBean(TavernMetadata.class, () -> new TavernMetadata(System.getProperty("tavern.version")));
         applicationContext.registerBean(TavernConfig.class, () -> config);
         applicationContext.registerBean(DiceFactory.class, DiceFactory::new);
+        applicationContext.registerBean(GuildConfigRepository.class, GuildConfigMemRepository::new);
 
         DrinkPointCache cache = new DrinkPointCache();
         applicationContext.registerBean(DrinkPointCache.class, () -> cache);
@@ -74,7 +78,8 @@ public class App {
                 RollSlashCommandListener.class,
                 DrinkCommandListener.class,
                 PopPopCommandListener.class,
-                DrinkPointCommandListener.class
+                DrinkPointCommandListener.class,
+                CampaignConfigListener.class
             ))
             .build();
 
