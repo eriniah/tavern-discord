@@ -12,14 +12,15 @@ repositories {
         url = 'https://m2.dv8tion.net/releases'
     }
     maven {
-        name "lavalinkDevReleases"
-        url "https://maven.lavalink.dev/releases"
+        name =  "lavalinkDevReleases"
+        url = "https://maven.lavalink.dev/releases"
     }
 }
 
-test {
-    useJUnitPlatform()
-    testLogging {
+
+tasks.named('test', Test) {
+    it.useJUnitPlatform()
+    it.testLogging {
         events "passed", "skipped", "failed"
     }
 }

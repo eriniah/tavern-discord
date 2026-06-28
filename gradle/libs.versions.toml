@@ -30,10 +30,10 @@ objenesis = '3.5'
 
 [libraries]
 # Spring
-spring-bom = { module = 'org.springframework:spring-bom', version.ref = 'spring' }
-spring-core = { module = 'org.springframework:spring-core', version.ref = 'spring' }
-spring-context = { module = 'org.springframework:spring-context', version.ref = 'spring' }
-spring-beans = { module = 'org.springframework:spring-beans', version.ref = 'spring' }
+spring-bom = { module = 'org.springframework:spring-framework-bom', version.ref = 'spring' }
+spring-core = { module = 'org.springframework:spring-core' }
+spring-context = { module = 'org.springframework:spring-context' }
+spring-beans = { module = 'org.springframework:spring-beans' }
 
 # Util
 google-guava = { module = 'com.google.guava:guava', version.ref = 'google-guava' }
@@ -58,12 +58,12 @@ lavaplayer-youtube = { module = 'dev.lavalink.youtube:v2', version.ref = 'lavapl
 mongodb-bom = { module = 'org.mongodb:mongodb-driver-bom', version.ref = 'mongodb' }
 
 # JSON
-jackson-bom = { module = 'com.fasterxml.jackson.core:jackson-bom', version.ref = 'jackson' }
-jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core', version.ref = 'jackson' }
-jackson-databind = { module = 'com.fasterxml.jackson.core:jackson-databind', version.ref = 'jackson' }
-jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations', version.ref = 'jacksonAnnotation' }
-jackson-datatype-jdk8 = { module = 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8', version.ref = 'jackson' }
-jackson-dataformat-properties = { module = 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties', version.ref = 'jackson' }
+jackson-bom = { module = 'com.fasterxml.jackson:jackson-bom', version.ref = 'jackson' }
+jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core' }
+jackson-databind = { module = 'com.fasterxml.jackson.core:jackson-databind' }
+jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations' }
+jackson-datatype-jdk8 = { module = 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8' }
+jackson-dataformat-properties = { module = 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties' }
 
 joptSimple = { module = 'net.sf.jopt-simple:jopt-simple', version.ref = 'joptSimple' }
 
@@ -79,7 +79,8 @@ jansi = { module = 'org.fusesource.jansi:jansi', version.ref = 'jansi' }
 # === Testing
 # mandatory dependencies for using Spock
 spock-bom = { module = 'org.spockframework:spock-bom', version.ref = 'spock' }
-spock-core = { module = 'org.spockframework:spock-core', version.ref = 'spock' }
+spock-core = { module = 'org.spockframework:spock-core' }
+junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher' }
 
 # Optional dependencies for using Spock
 hamcrest = { module = 'org.hamcrest:hamcrest-core', version.ref = 'hamcrest' }
@@ -117,6 +118,7 @@ log4j = [
 
 spock = [
     'spock-core',
+    'junit-platform-launcher',
     'hamcrest',
     'byteBuddy',
     'objenesis',

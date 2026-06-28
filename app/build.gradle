@@ -54,7 +54,7 @@ distributions {
 }
 
 jar {
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     manifest {
         attributes 'Main-Class': application.mainClass
     }
