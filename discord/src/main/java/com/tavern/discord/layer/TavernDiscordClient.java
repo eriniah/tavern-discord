@@ -8,6 +8,7 @@ import com.tavern.domain.model.guild.config.GuildConfigRepository;
 import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -91,6 +92,9 @@ public final class TavernDiscordClient implements AutoCloseable {
                 GUILD_VOICE_STATES,
                 GUILD_MEMBERS
             ))
+//            .setAudioModuleConfig(new AudioModuleConfig().withDaveSessionFactory(
+//                new // JDaveSessionFactory()
+//            ))
             .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
             .addEventListeners(new SlashCommandListenerAdapter(injectables, typeConverter, slashCommandCache))
             .build();

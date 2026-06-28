@@ -4,7 +4,7 @@ google-guava = '33.6.0-jre'
 jakarta-annotations = '3.0.0'
 rxJava = '3.1.12'
 
-discordJda = '5.6.1'
+discordJda = '6.4.2'
 jDave = '0.1.7'
 # Snapshot version for most recent youtube API fix
 lavaplayer = '2.2.6'
@@ -12,21 +12,21 @@ lavaplayer-youtube = '1.18.1'
 
 mongodb = '5.8.0'
 
-# TODO: Migrate jackson to 3.x.x https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md
+# TODO: Migrate jackson to 3.x.x once jackson-dataformats-text gets a release https://github.com/FasterXML/jackson-dataformats-text
 jackson = '2.22.0'
-# Why jackson, why...
+# Note: Jackson annotations dropped the patch version. Additionally, jackson 3.0 uses jackson annotations 2.20+
 jacksonAnnotation = '2.22'
 joptSimple = '5.0.4'
 
-slf4j = '2.0.17'
-log4j = '2.25.1'
-jansi = '2.4.2'
+slf4j = '2.0.18'
+log4j = '2.26.0'
+jansi = '2.4.3'
 
 # Test
-spock = '2.4-M6-groovy-4.0'
+spock = '2.4-groovy-5.0'
 hamcrest = '2.2'
-byteBuddy = '1.10.10'
-objenesis = '3.1'
+byteBuddy = '1.18.10'
+objenesis = '3.5'
 
 [libraries]
 # Spring
