@@ -1,7 +1,7 @@
-package com.tavern.domain.model.discord.guild.config;
+package com.tavern.domain.model.guild.config;
 
 import com.tavern.domain.model.IdentifiedDomainObject;
-import com.tavern.domain.model.discord.guild.GuildId;
+import com.tavern.domain.model.guild.GuildId;
 
 /**
  * All Configuration for a single guild

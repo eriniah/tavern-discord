@@ -3,7 +3,7 @@ package com.tavern.discord.listeners.drink.quest;
 import com.tavern.discord.layer.annotations.Inject;
 import com.tavern.discord.layer.command.slash.*;
 import com.tavern.discord.layer.command.slash.annotations.SlashCommandHandler;
-import com.tavern.domain.model.discord.guild.config.GuildConfigRepository;
+import com.tavern.domain.model.guild.config.GuildConfigRepository;
 
 public class CampaignConfigListener implements SlashCommandListener {
 

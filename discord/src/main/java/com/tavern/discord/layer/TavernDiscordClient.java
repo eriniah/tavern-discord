@@ -2,6 +2,9 @@ package com.tavern.discord.layer;
 
 import com.tavern.discord.layer.command.slash.SlashCommandListener;
 import com.tavern.discord.layer.command.slash.TavernSlashCommandFactory;
+import com.tavern.domain.model.discord.DiscordInterface;
+import com.tavern.domain.model.guild.GuildId;
+import com.tavern.domain.model.guild.config.GuildConfigRepository;
 import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -16,6 +19,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import static net.dv8tion.jda.api.requests.GatewayIntent.*;
 
@@ -23,12 +27,14 @@ public final class TavernDiscordClient implements AutoCloseable {
     private static final XLogger logger = XLoggerFactory.getXLogger(TavernDiscordClient.class);
 
     private final JDA jda;
+    private final DiscordInterfaceImpl discordInterface;
     private final String defaultCommandPrefix;
     private final Injectables injectables;
     private final TavernSlashCommandCache slashCommandCache;
     private final TypeConverterRegistry typeConverter;
 
     private TavernDiscordClient(TavernDiscordClient.Builder builder) {
+        this.discordInterface = builder.discordInterface;
         this.defaultCommandPrefix = builder.defaultCommandPrefix;
         this.injectables = Objects.requireNonNullElseGet(builder.injectables, () -> new Injectables.Builder().build());
 
@@ -86,8 +92,17 @@ public final class TavernDiscordClient implements AutoCloseable {
                 GUILD_MEMBERS
             ))
             .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
-            .addEventListeners(new SlashCommandListenerAdaptor(injectables, typeConverter, slashCommandCache))
+            .addEventListeners(new SlashCommandListenerAdapter(injectables, typeConverter, slashCommandCache))
             .build();
+        this.discordInterface.jda(jda);
+    }
+
+    public void initializeGuilds(GuildConfigRepository repository, Set<GuildId> knownGuilds) {
+        jda.getGuilds().stream()
+            .map(Guild::getId)
+            .map(GuildId::new)
+            .filter(Predicate.not(knownGuilds::contains))
+            .forEach(guild -> repository.save(discordInterface.newGuild(guild)));
     }
 
     public boolean awaitReady() throws InterruptedException {
@@ -106,23 +121,29 @@ public final class TavernDiscordClient implements AutoCloseable {
         }
     }
 
+    public DiscordInterface getInterface() {
+        return discordInterface;
+    }
+
     @Override
     public void close() {
         jda.shutdown();
     }
 
-    public static Builder builder(String token) {
-        return new Builder(token);
+    public static Builder builder(DiscordInterfaceImpl discordInterface, String token) {
+        return new Builder(discordInterface, token);
     }
 
     public static class Builder {
+        private final DiscordInterfaceImpl discordInterface;
         private final String token;
         private final List<Class<? extends SlashCommandListener>> slashCommandListeners = new ArrayList<>();
         private String defaultCommandPrefix = "$";
         private Injectables injectables = null;
         private TypeConverterRegistry typeConverter = null;
 
-        public Builder(String token) {
+        public Builder(DiscordInterfaceImpl discordInterface, String token) {
+            this.discordInterface = discordInterface;
             this.token = token;
         }
 

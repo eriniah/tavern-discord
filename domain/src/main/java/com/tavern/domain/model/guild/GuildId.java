@@ -1,4 +1,4 @@
-package com.tavern.domain.model.discord.guild;
+package com.tavern.domain.model.guild;
 
 import com.tavern.domain.model.Identifier;
 

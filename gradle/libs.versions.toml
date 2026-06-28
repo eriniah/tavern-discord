@@ -1,17 +1,21 @@
 [versions]
-spring = '6.2.9'
-google-guava = '33.4.8-jre'
+spring = '6.2.19'
+google-guava = '33.6.0-jre'
 jakarta-annotations = '3.0.0'
+rxJava = '3.1.12'
 
 discordJda = '5.6.1'
+jDave = '0.1.7'
 # Snapshot version for most recent youtube API fix
-# lavaplayer = 'afec211f05c9dcf0b6ee44276a02f0316ea2458a-SNAPSHOT'
 lavaplayer = '2.2.6'
-lavaplayer-youtube = '1.18.0'
+lavaplayer-youtube = '1.18.1'
 
-mongodb = '5.5.1'
+mongodb = '5.8.0'
 
-jackson = '2.19.2'
+# TODO: Migrate jackson to 3.x.x https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md
+jackson = '2.22.0'
+# Why jackson, why...
+jacksonAnnotation = '2.22'
 joptSimple = '5.0.4'
 
 slf4j = '2.0.17'
@@ -34,9 +38,16 @@ spring-beans = { module = 'org.springframework:spring-beans', version.ref = 'spr
 # Util
 google-guava = { module = 'com.google.guava:guava', version.ref = 'google-guava' }
 jakarta-annotations = { module = 'jakarta.annotation:jakarta.annotation-api', version.ref = 'jakarta-annotations' }
+rxJava = { module = 'io.reactivex.rxjava3:rxjava', version.ref = 'rxJava' }
 
 # Discord JDS API
 discordJda = { module = 'net.dv8tion:JDA', version.ref = 'discordJda' }
+
+# JDave (Required for JDA https://jda.wiki/using-jda/troubleshooting/#using-passthrough-dave-session-please-migrate-to-an-implementation-of-libdave)
+jdave-api = { module = 'club.minnced:jdave-api', version.ref = 'jDave' }
+# Pre-compiled per-platform natives. See https://github.com/MinnDevelopment/jdave?tab=readme-ov-file#installation
+jdave-natives-linux-x86x64 = { module = 'club.minnced:jdave-native-linux-x86-64', version.ref = 'jDave' }
+jdave-natives-windows-x86x64 = { module = 'club.minnced:jdave-native-win-x86-64', version.ref = 'jDave' }
 
 # Lavaplayer for music streaming
 lavaplayer = { module = 'dev.arbjerg:lavaplayer', version.ref = 'lavaplayer' }
@@ -50,7 +61,7 @@ mongodb-bom = { module = 'org.mongodb:mongodb-driver-bom', version.ref = 'mongod
 jackson-bom = { module = 'com.fasterxml.jackson.core:jackson-bom', version.ref = 'jackson' }
 jackson-core = { module = 'com.fasterxml.jackson.core:jackson-core', version.ref = 'jackson' }
 jackson-databind = { module = 'com.fasterxml.jackson.core:jackson-databind', version.ref = 'jackson' }
-jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations', version.ref = 'jackson' }
+jackson-annotations = { module = 'com.fasterxml.jackson.core:jackson-annotations', version.ref = 'jacksonAnnotation' }
 jackson-datatype-jdk8 = { module = 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8', version.ref = 'jackson' }
 jackson-dataformat-properties = { module = 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties', version.ref = 'jackson' }
 
@@ -85,7 +96,8 @@ core = [
     'google-guava',
     'slf4j-api',
     'slf4j-ext',
-    'jakarta-annotations'
+    'jakarta-annotations',
+    'rxJava'
 ]
 
 jackson = [

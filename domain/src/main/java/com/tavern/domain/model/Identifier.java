@@ -1,6 +1,7 @@
 package com.tavern.domain.model;
 
 import com.tavern.utilities.StringUtils;
+import com.tavern.utilities.ValidationUtils;
 
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ public abstract class Identifier {
 	protected Identifier() { }
 
 	protected Identifier(String id) {
-        setId(id);
+		ValidationUtils.requireNonBlank(id, "Identifier cannot be null or blank");
 	}
 
 	@Override
@@ -36,13 +37,6 @@ public abstract class Identifier {
 
 	public String getId() {
 		return id;
-	}
-
-	private void setId(String id) {
-		if (StringUtils.isNullOrBlank(id)) {
-			throw new IllegalArgumentException("Identifier cannot be null or blank");
-		}
-		this.id = id;
 	}
 
 }

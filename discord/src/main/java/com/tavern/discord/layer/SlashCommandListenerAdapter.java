@@ -4,7 +4,7 @@ import com.tavern.discord.layer.annotations.*;
 import com.tavern.discord.layer.command.CommandId;
 import com.tavern.discord.layer.command.slash.*;
 import com.tavern.discord.layer.command.slash.annotations.*;
-import com.tavern.domain.model.discord.guild.GuildId;
+import com.tavern.domain.model.guild.GuildId;
 import com.tavern.utilities.StringUtils;
 import com.tavern.utilities.convert.*;
 import net.dv8tion.jda.api.JDA;
@@ -24,15 +24,15 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
 
-class SlashCommandListenerAdaptor extends ListenerAdapter {
-    private static final XLogger logger = XLoggerFactory.getXLogger(SlashCommandListenerAdaptor.class);
+class SlashCommandListenerAdapter extends ListenerAdapter {
+    private static final XLogger logger = XLoggerFactory.getXLogger(SlashCommandListenerAdapter.class);
 
     private final Injectables injectables;
     private final TypeConverterRegistry optionTypeConverter;
     private final TavernSlashCommandCache commandCache;
     private final TypeConverterRegistry returnTypeConverter;
 
-    public SlashCommandListenerAdaptor(Injectables injectables, TypeConverterRegistry optionTypeConverter, TavernSlashCommandCache commandCache) {
+    public SlashCommandListenerAdapter(Injectables injectables, TypeConverterRegistry optionTypeConverter, TavernSlashCommandCache commandCache) {
         this.injectables = injectables;
         this.optionTypeConverter = optionTypeConverter;
         this.commandCache = commandCache;
